@@ -41,6 +41,19 @@ The application follows a client-server architecture:
 - **Calendar Component**: Custom calendar component using Skeleton.dev components or Svelte calendar library
 - **Data Fetching**: Supabase JavaScript Client Library (@supabase/supabase-js)
 
+#### Rendering & SSR Data Loading
+- **Rendering Strategy**:
+  - Uses SvelteKit's server-side rendering (SSR) and static site generation (SSG) via `adapter-static`
+  - The main calendar page is pre-rendered using a SvelteKit `+page.ts` load function
+- **SSR Data Loading**:
+  - Calendar data is fetched on the server in the `load` function before the page is rendered
+  - The load function calls a shared data service that uses the Supabase JavaScript client to query the `calendar` table
+  - The result is passed to the Svelte page component as `PageData`, so the table renders with data on first paint (no client-only fetch required)
+- **Environment Variables**:
+  - Supabase connection details are provided via `PUBLIC_SUPABASE_URL` and `PUBLIC_SUPABASE_ANON_KEY`
+  - These are accessed in SSR-safe code using SvelteKit's `$env/static/public` API
+  - Only public, read-only Supabase credentials are used in the frontend; no secret keys are exposed
+
 #### Testing
 - **E2E Testing**: Playwright for end-to-end browser testing
 - **Unit Testing**: Vitest (SvelteKit default) for component and unit tests

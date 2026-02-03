@@ -52,7 +52,7 @@ This document contains the detailed task breakdown for Milestone 2 of the Tutors
   - [ ] Supabase project access configured
   - [ ] Supabase client library installed (@supabase/supabase-js)
   - [ ] Environment variables configured (.env files)
-  - [ ] Supabase client initialized in application
+  - [ ] Supabase client initialized in application using SvelteKit's environment APIs (e.g. `$env/static/public`)
   - [ ] Connection test successful
   - [ ] Read-only access verified
 - **Dependencies**: INFRA-003 (from Milestone 1), DB-001
@@ -66,7 +66,7 @@ This document contains the detailed task breakdown for Milestone 2 of the Tutors
 - **Assignee**: [Name]
 - **Description**: Implement functionality to read calendar table data from Supabase
 - **Acceptance Criteria**:
-  - [ ] SvelteKit load function or data service created
+  - [ ] SvelteKit `+page.ts` SSR load function and shared data service created
   - [ ] Query to fetch all calendar table data implemented
   - [ ] Data fetched successfully from Supabase
   - [ ] Error handling for connection failures

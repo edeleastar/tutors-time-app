@@ -12,13 +12,13 @@
     "test:e2e:ui": "playwright test --ui"
   },
   "devDependencies": {
+    "@playwright/test": "^1.40.0",
     "@sveltejs/adapter-static": "^3.0.1",
     "@sveltejs/kit": "^2.0.0",
     "@sveltejs/vite-plugin-svelte": "^3.0.0",
-    "@types/node": "^20.10.0",
     "@tailwindcss/forms": "^0.5.7",
     "@tailwindcss/typography": "^0.5.10",
-    "@playwright/test": "^1.40.0",
+    "@types/node": "^20.10.0",
     "autoprefixer": "^10.4.16",
     "playwright": "^1.40.0",
     "postcss": "^8.4.32",
@@ -31,7 +31,8 @@
   },
   "dependencies": {
     "@skeletonlabs/skeleton": "^2.7.0",
-    "@skeletonlabs/tw-plugin": "^0.3.0"
+    "@skeletonlabs/tw-plugin": "^0.3.0",
+    "@supabase/supabase-js": "^2.93.3"
   },
   "type": "module"
 }
