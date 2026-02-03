@@ -21,3 +21,17 @@
   height: calc(100vh - 12rem);
   min-height: 320px;
 }
+
+/* Vertical column headers (AG Grid) – save horizontal space */
+.ag-theme-quartz .ag-header-vertical .ag-header-cell-label {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+}
+.ag-theme-quartz .ag-header-vertical .ag-header-cell-text {
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
+  white-space: nowrap;
+  line-height: 1.2;
+}

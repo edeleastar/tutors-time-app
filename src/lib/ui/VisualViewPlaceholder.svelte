@@ -68,10 +68,12 @@
 
   const columnDefs = $derived.by((): ColDef<PivotedRow>[] => {
     const cols: ColDef<PivotedRow>[] = [
-      { field: 'studentid', headerName: 'Student ID', minWidth: 120, flex: 1 },
+      { field: 'studentid', headerName: 'Student ID', minWidth: 120, flex: 1, pinned: 'left' },
       {
         field: 'totalSeconds',
         headerName: 'Total',
+        headerClass: 'ag-header-vertical',
+        sort: 'desc',
         valueFormatter: (p) =>
           p.value != null && Number(p.value) > 0
             ? String(Math.round(Number(p.value) / 60))
@@ -85,6 +87,7 @@
       cols.push({
         field: d,
         headerName: formatDateShort(d),
+        headerClass: 'ag-header-vertical',
         valueFormatter: (p) =>
           p.value != null && Number(p.value) > 0 ? formatTime(Number(p.value)) : '',
         cellClass: 'ag-right-aligned-cell',
@@ -105,6 +108,7 @@
       defaultColDef: { sortable: true, resizable: true },
       domLayout: 'normal',
       suppressNoRowsOverlay: false,
+      headerHeight: 72,
     });
     gridApi = api;
     return () => {
