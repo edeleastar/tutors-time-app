@@ -1,13 +1,8 @@
 <script lang="ts">
   import '../app.css';
+  let { children } = $props();
 </script>
 
 <main>
-  <slot />
+  {@render children()}
 </main>
-
-<style>
-  :global(body) {
-    margin: 0;
-  }
-</style>
