@@ -6,13 +6,14 @@ export function getDistinctSortedDates(entries: CalendarEntry[]): string[] {
   return Array.from(new Set(entries.map((e) => e.id))).sort();
 }
 
-/** Compressed date for column headers to minimize width (e.g. "3/2" for 3 Feb). */
+/** Compressed date for column headers to minimize width (e.g. "3/2/25" for 3 Feb 2025). */
 export function formatDateShort(dateString: string): string {
   try {
     const date = new Date(dateString + 'T12:00:00');
     const day = date.getDate();
     const month = date.getMonth() + 1;
-    return `${day}/${month}`;
+    const year = String(date.getFullYear() % 100).padStart(2, '0');
+    return `${day}/${month}/${year}`;
   } catch {
     return dateString;
   }
@@ -108,6 +109,26 @@ export function buildPerDateTimeColumns<T = any>(dates: string[]): ColDef<T>[] {
     valueFormatter: (p) =>
       p.value != null && Number(p.value) > 0
         ? formatTimeNearestMinute(Number(p.value))
+        : '',
+    cellClass: 'ag-right-aligned-cell',
+    cellStyle: (p) => ({
+      backgroundColor: cellColorForMinutes(p.value as number),
+      textAlign: 'center',
+    }),
+    width: 40,
+    maxWidth: 64,
+  })) as ColDef<T>[];
+}
+
+/** Column definitions for per‑date time columns showing minutes only (for summary views). */
+export function buildPerDateTimeColumnsMinutesOnly<T = any>(dates: string[]): ColDef<T>[] {
+  return dates.map((d) => ({
+    field: d as any,
+    headerName: formatDateShort(d),
+    headerClass: 'ag-header-vertical',
+    valueFormatter: (p) =>
+      p.value != null && Number(p.value) > 0
+        ? formatTimeMinutesOnly(Number(p.value))
         : '',
     cellClass: 'ag-right-aligned-cell',
     cellStyle: (p) => ({
