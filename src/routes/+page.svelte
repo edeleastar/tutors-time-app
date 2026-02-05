@@ -72,6 +72,30 @@
   function handleDialogOpen(event: CustomEvent<{ open: boolean }>) {
     dialogOpen = event.detail.open;
   }
+
+  function handleCourseRemove(event: CustomEvent<{ courseId: string }>) {
+    const courseIdToRemove = event.detail.courseId;
+    
+    // Remove the course from the array
+    courses = courses.filter(c => c.id !== courseIdToRemove);
+    
+    // Update selection if the removed course was selected
+    if (selectedCourseId === courseIdToRemove) {
+      if (courses.length > 0) {
+        // Select the first course, or maintain selection if possible
+        selectedCourseId = courses[0].id;
+      } else {
+        // No courses left, clear selection
+        selectedCourseId = null;
+        activeTab = null;
+      }
+    }
+    
+    // Update primaryCourseId if needed
+    if (primaryCourseId === courseIdToRemove) {
+      primaryCourseId = courses.length === 1 ? courses[0].id : null;
+    }
+  }
 </script>
 
 <svelte:head>
@@ -93,18 +117,25 @@
   <div class="card p-4 h-full flex flex-col">
     <div class="flex justify-between items-center mb-4 shrink-0">
       <h1 class="text-3xl font-bold">Calendar Data</h1>
-      <button type="button" onclick={openChangeCourseDialog} class="btn variant-filled-secondary"> Add Courses </button>
     </div>
 
-    {#if courses.length === 0}
-      <div class="flex items-center justify-center flex-1">
-        <p class="text-lg text-surface-600">Please select one or more course IDs to view calendar data</p>
-      </div>
-    {:else}
-      <div class="flex gap-4 flex-1 min-h-0">
-        <CourseList {courses} bind:selectedCourseId />
+    <div class="flex gap-4 flex-1 min-h-0">
+      <CourseList 
+        {courses} 
+        bind:selectedCourseId 
+        onAddCourses={openChangeCourseDialog}
+        on:remove={handleCourseRemove}
+      />
+
+      {#if courses.length === 0}
+        <div class="flex items-center justify-center flex-1">
+          <p class="text-lg text-surface-600">
+            Please select one or more course IDs to view calendar data
+          </p>
+        </div>
+      {:else}
         <CourseTabsView {selectedCourse} bind:activeTab />
-      </div>
-    {/if}
+      {/if}
+    </div>
   </div>
 </section>

@@ -33,6 +33,47 @@
   let dateRangeError = $state<string | null>(null);
   let dialogElement: HTMLDialogElement | undefined;
 
+  /**
+   * Extract course ID from input, handling URLs by extracting the last path segment.
+   * If input is a URL, returns the last segment; otherwise returns input as-is.
+   */
+  function extractCourseIdFromInput(input: string): string {
+    const trimmed = input.trim();
+    
+    // Check if it looks like a URL
+    if (trimmed.startsWith('http://') || trimmed.startsWith('https://') || trimmed.includes('/')) {
+      try {
+        // Handle URLs with protocol
+        let urlString = trimmed;
+        if (!trimmed.startsWith('http://') && !trimmed.startsWith('https://')) {
+          urlString = 'https://' + trimmed; // Assume https for relative URLs
+        }
+        
+        const url = new URL(urlString);
+        const pathSegments = url.pathname.split('/').filter(segment => segment.length > 0);
+        
+        if (pathSegments.length > 0) {
+          // Get last segment and remove query params/fragments
+          const lastSegment = pathSegments[pathSegments.length - 1];
+          return lastSegment.split('?')[0].split('#')[0];
+        }
+        
+        // Fallback: if no path segments, return hostname or original input
+        return url.hostname || trimmed;
+      } catch {
+        // If URL parsing fails, try simple string split
+        const segments = trimmed.split('/').filter(s => s.length > 0);
+        if (segments.length > 0) {
+          const lastSegment = segments[segments.length - 1];
+          return lastSegment.split('?')[0].split('#')[0];
+        }
+      }
+    }
+    
+    // Not a URL, return as-is
+    return trimmed;
+  }
+
   // Update textarea when primary courseId prop changes
   $effect(() => {
     if (courseId) {
@@ -52,7 +93,7 @@
   function handleSubmit() {
     const ids = courseIdsInput
       .split(/\r?\n/)
-      .map((line) => line.trim())
+      .map((line) => extractCourseIdFromInput(line))
       .filter(Boolean);
 
     const uniqueIds = Array.from(new Set(ids));
