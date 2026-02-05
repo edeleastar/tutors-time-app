@@ -2,7 +2,7 @@
   import { createGrid, ModuleRegistry, AllCommunityModule } from "ag-grid-community";
   import type { ColDef, GridApi } from "ag-grid-community";
   import type { CalendarEntry } from "$lib/types";
-  import { getDistinctSortedWeeks, getDistinctSortedDates, getMondayForDate, buildTotalSecondsColumn, buildPerWeekTimeColumns, buildPerDateTimeColumns } from "$lib/calendarUtils";
+  import { getDistinctSortedWeeks, getDistinctSortedDates, getMondayForDate, buildTotalSecondsColumn, buildPerWeekTimeColumns, buildPerDateTimeColumns } from "$lib/services/calendarUtils";
 
   ModuleRegistry.registerModules([AllCommunityModule]);
 

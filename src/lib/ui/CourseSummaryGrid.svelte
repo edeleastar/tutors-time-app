@@ -9,7 +9,7 @@
     buildTotalSecondsColumn,
     buildPerWeekTimeColumnsMinutesOnly,
     buildPerDateTimeColumnsMinutesOnly
-  } from "$lib/calendarUtils";
+  } from "$lib/services/calendarUtils";
 
   ModuleRegistry.registerModules([AllCommunityModule]);
 

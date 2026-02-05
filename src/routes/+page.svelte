@@ -16,7 +16,7 @@
 
   // Course selection and tab state
   let selectedCourseId = $state<string | null>(null);
-  let activeTab = $state<"table" | "visual" | "summary" | null>(null);
+  let activeTab = $state<"raw" | "calendar" | "summary" | null>(null);
 
   // Derived: find the selected course
   const selectedCourse = $derived(courses.find((c) => c.id === selectedCourseId) ?? null);
@@ -36,7 +36,7 @@
       // Set initial selected course and tab
       if (loadedCourses.length > 0) {
         selectedCourseId = loadedCourses[0].id;
-        activeTab = "table";
+        activeTab = "calendar";
       }
 
       dialogOpen = false;

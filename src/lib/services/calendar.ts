@@ -1,4 +1,4 @@
-import { getSupabase } from "../supabase";
+import { getSupabase } from "./supabase";
 import type { CalendarEntry } from "../types";
 
 export async function getCalendarData(courseid?: string): Promise<CalendarEntry[]> {
