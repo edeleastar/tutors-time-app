@@ -16,3 +16,14 @@ export interface TutorsConnectCourse {
     [key: string]: any; // Allow other fields in JSON
   } | null; // json
 }
+
+// Supabase `tutors-connect-users` table model
+export interface TutorsConnectUser {
+  github_id: string; // text, primary key
+  email: string | null;
+  full_name: string | null;
+  avatar_url: string | null;
+  online_status: string | null;
+  date_last_accessed: string | null; // timestamptz (ISO string)
+}
+

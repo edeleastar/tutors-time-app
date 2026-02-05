@@ -1,5 +1,5 @@
 import { getSupabase } from "./supabase";
-import type { CalendarEntry, TutorsConnectCourse } from "../types";
+import type { CalendarEntry, TutorsConnectCourse, TutorsConnectUser } from "../types";
 
 export async function getCalendarData(courseid?: string): Promise<CalendarEntry[]> {
   const supabase = getSupabase();
@@ -15,7 +15,38 @@ export async function getCalendarData(courseid?: string): Promise<CalendarEntry[
     throw new Error(`Failed to fetch calendar data: ${error.message}`);
   }
 
-  return data || [];
+  const entries: CalendarEntry[] = (data as CalendarEntry[]) ?? [];
+
+  // Look up student full names by studentid (github_id in tutors-connect-users)
+  const studentIds = Array.from(new Set(entries.map((e) => e.studentid).filter(Boolean)));
+  if (!studentIds.length) {
+    return entries;
+  }
+
+  const { data: userRows, error: userError } = await supabase
+    .from("tutors-connect-users")
+    .select("github_id, full_name")
+    .in("github_id", studentIds);
+
+  if (userError) {
+    // If lookup fails, fall back to raw student IDs
+    return entries;
+  }
+
+  const nameMap: Record<string, string> = {};
+  for (const row of (userRows ?? []) as TutorsConnectUser[]) {
+    const key = row.github_id?.trim();
+    if (!key) continue;
+    const displayName =
+      row.full_name && row.full_name.trim().length > 0 ? row.full_name.trim() : key;
+    nameMap[key] = displayName;
+  }
+
+  // Replace studentid with the full name (or leave as-is if no match)
+  return entries.map((entry) => ({
+    ...entry,
+    studentid: nameMap[entry.studentid] ?? entry.studentid,
+  }));
 }
 
 /** Filter calendar entries by date range. */
