@@ -14,9 +14,3 @@ npm run dev
 ```bash
 npm run build
 ```
-
-## Testing
-
-```bash
-npm run test:e2e
-```
