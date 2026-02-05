@@ -4,6 +4,7 @@
   interface Props {
     courses: Array<{
       id: string;
+      title: string;
       loading: boolean;
       error: string | null;
     }>;
@@ -36,7 +37,7 @@
           <div class="flex items-center justify-between gap-2">
             <div class="flex items-center gap-2 flex-1 min-w-0">
               <span class="text-sm font-medium truncate {selectedCourseId === course.id ? 'text-primary-500' : 'text-surface-900-50'}">
-                {course.id}
+                {course.title}
               </span>
               {#if course.loading}
                 <span class="text-xs text-surface-500 shrink-0">Loading...</span>
