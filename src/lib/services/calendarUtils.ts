@@ -1,6 +1,9 @@
 import type { CalendarEntry } from '$lib/types';
 import type { ColDef } from 'ag-grid-community';
 
+// Shared view mode type for calendar grids.
+export type ViewMode = 'week' | 'day';
+
 /** Return distinct sorted dates (ids) from calendar entries. */
 export function getDistinctSortedDates(entries: CalendarEntry[]): string[] {
   return Array.from(new Set(entries.map((e) => e.id))).sort();
@@ -204,4 +207,32 @@ export function buildPerWeekTimeColumnsMinutesOnly<T = any>(weeks: string[]): Co
   })) as ColDef<T>[];
 }
 
+/**
+ * Toggle helper for view mode.
+ * Components should use: `viewMode = toggleViewMode(viewMode)`.
+ */
+export function toggleViewMode(current: ViewMode): ViewMode {
+  return current === 'week' ? 'day' : 'week';
+}
+
+/**
+ * Helper to select time columns (week/day, minutes or hours+minutes)
+ * so that CalendarGrid and CourseSummaryGrid share the same logic.
+ */
+export function selectTimeColumns<T>(
+  viewMode: ViewMode,
+  weeks: string[],
+  dates: string[],
+  useMinutesOnly: boolean = false
+): ColDef<T>[] {
+  if (viewMode === 'week') {
+    return useMinutesOnly
+      ? buildPerWeekTimeColumnsMinutesOnly<T>(weeks)
+      : buildPerWeekTimeColumns<T>(weeks);
+  } else {
+    return useMinutesOnly
+      ? buildPerDateTimeColumnsMinutesOnly<T>(dates)
+      : buildPerDateTimeColumns<T>(dates);
+  }
+}
 

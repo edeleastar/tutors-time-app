@@ -2,13 +2,14 @@
   import { createGrid, ModuleRegistry, AllCommunityModule } from "ag-grid-community";
   import type { ColDef, GridApi } from "ag-grid-community";
   import type { CalendarEntry } from "$lib/types";
+  import ViewModeToggle from "$lib/ui/ViewModeToggle.svelte";
   import {
     getDistinctSortedWeeks,
     getDistinctSortedDates,
     getMondayForDate,
     buildTotalSecondsColumn,
-    buildPerWeekTimeColumnsMinutesOnly,
-    buildPerDateTimeColumnsMinutesOnly
+    selectTimeColumns,
+    type ViewMode
   } from "$lib/services/calendarUtils";
 
   ModuleRegistry.registerModules([AllCommunityModule]);
@@ -29,7 +30,7 @@
 
   let gridContainer = $state<HTMLDivElement | null>(null);
   let gridApi = $state<GridApi<SummaryRow> | null>(null);
-  let viewMode = $state<"week" | "day">("week");
+  let viewMode = $state<ViewMode>("week");
 
   const weeks = $derived(getDistinctSortedWeeks(data));
   const dates = $derived(getDistinctSortedDates(data));
@@ -69,6 +70,7 @@
   );
 
   const columnDefs = $derived.by((): ColDef<SummaryRow>[] => {
+    const timeColumns = selectTimeColumns<SummaryRow>(viewMode, weeks, dates, true);
     const cols: ColDef<SummaryRow>[] = [
       {
         field: "courseid",
@@ -78,7 +80,7 @@
         flex: 1
       },
       buildTotalSecondsColumn<SummaryRow>("totalSeconds", "Total"),
-      ...(viewMode === "week" ? buildPerWeekTimeColumnsMinutesOnly<SummaryRow>(weeks) : buildPerDateTimeColumnsMinutesOnly<SummaryRow>(dates))
+      ...timeColumns
     ];
 
     return cols;
@@ -112,7 +114,7 @@
     }
   });
 
-  function toggleViewMode() {
+  function handleToggleViewMode() {
     viewMode = viewMode === "week" ? "day" : "week";
   }
 </script>
@@ -132,11 +134,7 @@
   </div>
 {:else}
   <div class="flex h-full flex-col gap-2">
-    <div class="flex shrink-0 justify-end">
-      <button type="button" onclick={toggleViewMode} class="btn variant-filled-secondary" aria-label={viewMode === "week" ? "Switch to daily view" : "Switch to weekly view"}>
-        {viewMode === "week" ? "Show by day" : "Show by week"}
-      </button>
-    </div>
+    <ViewModeToggle viewMode={viewMode} onToggle={handleToggleViewMode} />
     <div class="ag-theme-quartz grid-fill-container min-h-0 flex-1" role="grid" aria-label="Course summary">
       <div bind:this={gridContainer} class="grid-fill-container"></div>
     </div>
