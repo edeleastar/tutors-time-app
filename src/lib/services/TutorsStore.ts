@@ -183,6 +183,20 @@ export const TutorsStore = {
 
     let learningRecords: LearningRecord[] = (data as LearningRecord[]) ?? [];
 
+    // Sort learning records: primary key by student_id, secondary key by lo_id
+    learningRecords.sort((a, b) => {
+      const aStudentId = a.student_id || '';
+      const bStudentId = b.student_id || '';
+      const studentCompare = aStudentId.localeCompare(bStudentId);
+      if (studentCompare !== 0) {
+        return studentCompare;
+      }
+      // If student_id is the same, sort by lo_id
+      const aLoId = a.lo_id || '';
+      const bLoId = b.lo_id || '';
+      return aLoId.localeCompare(bLoId);
+    });
+
     // Enrich learning records with student full names (similar to calendar entries)
     const studentIds = Array.from(new Set(learningRecords.map((r) => r.student_id).filter(Boolean)));
     if (studentIds.length > 0) {
