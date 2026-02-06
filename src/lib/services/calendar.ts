@@ -1,5 +1,5 @@
 import { getSupabase } from "./supabase";
-import type { CalendarEntry, TutorsConnectCourse, TutorsConnectUser, CourseCalendar } from "../types";
+import type { CalendarEntry, TutorsConnectCourse, TutorsConnectUser, CourseCalendar, LearningRecord } from "../types";
 
 export async function getCalendarData(courseid?: string): Promise<CalendarEntry[]> {
   const supabase = getSupabase();
@@ -125,19 +125,56 @@ export async function loadCalendarDataForCourses(courseIds: string[], startDate:
     title: titleMap[id] || id, // Use title or fallback to id
     data: [],
     loading: true,
-    error: null
+    error: null,
+    learningRecords: [],
+    learningRecordsLoading: true,
+    learningRecordsError: null
   }));
 
-  // Load data for each course
+  // Load calendar data and learning records for each course
   const results = await Promise.allSettled(
     uniqueIds.map(async (id) => {
       try {
         const rawData = await getCalendarData(id);
         const filteredData = filterByDateRange(rawData, startDate, endDate);
-        return { id, data: filteredData, error: null };
+        
+        // Load learning records for this course
+        let learningRecords: LearningRecord[] = [];
+        let learningRecordsError: string | null = null;
+        try {
+          const supabase = getSupabase();
+          const { data, error } = await supabase
+            .from("learning_records")
+            .select("*")
+            .eq("course_id", id)
+            .eq("type", "lab")
+            .order("date_last_accessed", { ascending: false });
+          
+          if (error) {
+            learningRecordsError = error.message;
+          } else {
+            learningRecords = (data as LearningRecord[]) ?? [];
+          }
+        } catch (e) {
+          learningRecordsError = e instanceof Error ? e.message : "Failed to load learning records";
+        }
+        
+        return { 
+          id, 
+          data: filteredData, 
+          error: null,
+          learningRecords,
+          learningRecordsError
+        };
       } catch (e) {
         const msg = e instanceof Error ? e.message : "Failed to load calendar data";
-        return { id, data: [], error: msg };
+        return { 
+          id, 
+          data: [], 
+          error: msg,
+          learningRecords: [],
+          learningRecordsError: null
+        };
       }
     })
   );
@@ -150,13 +187,18 @@ export async function loadCalendarDataForCourses(courseIds: string[], startDate:
         ...course,
         data: result.value.data,
         loading: false,
-        error: result.value.error
+        error: result.value.error,
+        learningRecords: result.value.learningRecords,
+        learningRecordsLoading: false,
+        learningRecordsError: result.value.learningRecordsError
       };
     } else {
       return {
         ...course,
         loading: false,
-        error: result.reason?.message || "Failed to load calendar data"
+        error: result.reason?.message || "Failed to load calendar data",
+        learningRecordsLoading: false,
+        learningRecordsError: result.reason?.message || "Failed to load learning records"
       };
     }
   });

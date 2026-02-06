@@ -3,7 +3,7 @@
   import CourseList from "$lib/ui/CourseList.svelte";
   import CourseTabsView from "$lib/ui/CourseTabsView.svelte";
   import { TutorsStore } from "$lib/services/TutorsStore";
-  import type { CourseCalendar } from "$lib/services/calendar";
+  import type { CourseCalendar } from "$lib/types";
   import type { PageData } from "./$types";
 
   // Selected courses and dialog state
@@ -17,7 +17,7 @@
 
   // Course selection and tab state
   let selectedCourseId = $state<string | null>(null);
-  let activeTab = $state<"raw" | "calendar" | "summary" | null>(null);
+  let activeTab = $state<"raw" | "calendar" | "summary" | "learning" | null>(null);
 
   // Derived: find the selected course
   const selectedCourse = $derived(courses.find((c) => c.id === selectedCourseId) ?? null);

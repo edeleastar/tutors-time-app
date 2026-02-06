@@ -3,15 +3,12 @@
   import CalendarTable from "$lib/ui/CalendarTable.svelte";
   import CalendarGrid from "$lib/ui/CalendarGrid.svelte";
   import CourseSummaryGrid from "$lib/ui/CourseSummaryGrid.svelte";
-  import type { CalendarEntry } from "$lib/types";
+  import LearningRecordsTable from "$lib/ui/LearningRecordsTable.svelte";
+  import type { CourseCalendar } from "$lib/types";
 
   interface Props {
-    selectedCourse: {
-      data: CalendarEntry[];
-      loading: boolean;
-      error: string | null;
-    } | null;
-    activeTab: "raw" | "calendar" | "summary" | null;
+    selectedCourse: CourseCalendar | null;
+    activeTab: "raw" | "calendar" | "summary" | "learning" | null;
   }
 
   let { selectedCourse, activeTab = $bindable() }: Props = $props();
@@ -19,11 +16,12 @@
 
 <main class="flex-1 min-w-0 flex flex-col">
   {#if selectedCourse}
-    <Tabs value={activeTab ?? "calendar"} onValueChange={(details) => (activeTab = details.value as "raw" | "calendar" | "summary")} class="flex-1 flex flex-col min-h-0">
+    <Tabs value={activeTab ?? "calendar"} onValueChange={(details) => (activeTab = details.value as "raw" | "calendar" | "summary" | "learning")} class="flex-1 flex flex-col min-h-0">
       <Tabs.List class="shrink-0">
         <Tabs.Trigger value="calendar">Calendar</Tabs.Trigger>
         <Tabs.Trigger value="summary">Summary</Tabs.Trigger>
-        <Tabs.Trigger value="raw">Raw</Tabs.Trigger>
+        <Tabs.Trigger value="raw">Raw Calendar</Tabs.Trigger>
+        <Tabs.Trigger value="learning">Learning Records</Tabs.Trigger>
         <Tabs.Indicator />
       </Tabs.List>
       <Tabs.Content value="calendar" class="flex-1 min-h-0">
@@ -38,6 +36,13 @@
       </Tabs.Content>
       <Tabs.Content value="raw" class="flex-1 min-h-0">
         <CalendarTable data={selectedCourse.data} loading={selectedCourse.loading} error={selectedCourse.error} />
+      </Tabs.Content>
+      <Tabs.Content value="learning" class="flex-1 min-h-0">
+        <LearningRecordsTable 
+          data={selectedCourse.learningRecords} 
+          loading={selectedCourse.learningRecordsLoading} 
+          error={selectedCourse.learningRecordsError} 
+        />
       </Tabs.Content>
     </Tabs>
   {:else}

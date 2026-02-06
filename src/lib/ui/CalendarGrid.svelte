@@ -6,10 +6,11 @@
   import {
     getDistinctSortedWeeks,
     getDistinctSortedDates,
-    getMondayForDate,
     buildTotalSecondsColumn,
     selectTimeColumns,
-    type ViewMode
+    buildPivotedRows,
+    type ViewMode,
+    type PivotedRow
   } from "$lib/services/calendarUtils";
 
   ModuleRegistry.registerModules([AllCommunityModule]);
@@ -20,9 +21,6 @@
     error: string | null;
   }
 
-  /** Pivoted row: student id, total seconds, then one field per week or per date (time active seconds) */
-  type PivotedRow = { studentid: string; totalSeconds: number; [key: string]: string | number };
-
   let { data, loading, error }: Props = $props();
 
   let gridContainer = $state<HTMLDivElement | null>(null);
@@ -32,49 +30,11 @@
   const weeks = $derived(getDistinctSortedWeeks(data));
   const dates = $derived(getDistinctSortedDates(data));
 
-  const pivotedRowData = $derived(
-    (() => {
-      const students = Array.from(new Set(data.map((e) => e.studentid))).sort();
-      const map = new Map<string, number>();
-      if (viewMode === "week") {
-        for (const e of data) {
-          const weekMonday = getMondayForDate(e.id);
-          const key = `${e.studentid}\t${weekMonday}`;
-          map.set(key, (map.get(key) ?? 0) + e.timeactive);
-        }
-        return students.map((studentid) => {
-          let totalSeconds = 0;
-          const row: PivotedRow = { studentid, totalSeconds: 0 };
-          for (const weekMonday of weeks) {
-            const secs = map.get(`${studentid}\t${weekMonday}`) ?? 0;
-            row[weekMonday] = secs;
-            totalSeconds += secs;
-          }
-          row.totalSeconds = totalSeconds;
-          return row;
-        });
-      } else {
-        for (const e of data) {
-          const key = `${e.studentid}\t${e.id}`;
-          map.set(key, (map.get(key) ?? 0) + e.timeactive);
-        }
-        return students.map((studentid) => {
-          let totalSeconds = 0;
-          const row: PivotedRow = { studentid, totalSeconds: 0 };
-          for (const date of dates) {
-            const secs = map.get(`${studentid}\t${date}`) ?? 0;
-            row[date] = secs;
-            totalSeconds += secs;
-          }
-          row.totalSeconds = totalSeconds;
-          return row;
-        });
-      }
-    })()
-  );
+  const pivotedRowData = $derived(buildPivotedRows(data, weeks, dates, viewMode));
 
   const columnDefs = $derived.by((): ColDef<PivotedRow>[] => {
-    const timeColumns = selectTimeColumns<PivotedRow>(viewMode, weeks, dates, false);
+    // Use minutes-only formatting for all time columns in the calendar grid.
+    const timeColumns = selectTimeColumns<PivotedRow>(viewMode, weeks, dates, true);
     const cols: ColDef<PivotedRow>[] = [
       { field: "studentid", headerName: "Student ID", minWidth: 120, flex: 1, pinned: "left" },
       buildTotalSecondsColumn<PivotedRow>("totalSeconds", "Total"),

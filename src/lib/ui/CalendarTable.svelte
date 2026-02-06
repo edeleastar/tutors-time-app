@@ -18,17 +18,10 @@
     }
   }
 
-  function formatTime(seconds: number): string {
-    const hours = Math.floor(seconds / 3600);
-    const minutes = Math.floor((seconds % 3600) / 60);
-    const secs = seconds % 60;
-    if (hours > 0) {
-      return `${hours}h ${minutes}m ${secs}s`;
-    } else if (minutes > 0) {
-      return `${minutes}m ${secs}s`;
-    } else {
-      return `${secs}s`;
-    }
+  // `timeactive` is stored as a count of 30-second durations; convert to minutes for display.
+  function formatTime(blocks: number): string {
+    const minutes = Math.round((blocks * 30) / 60); // 30-second blocks -> minutes
+    return `${minutes}`;
   }
 </script>
 
@@ -54,7 +47,7 @@
           <th>Date</th>
           <th>Student ID</th>
           <th>Course ID</th>
-          <th class="text-right">Time Active</th>
+          <th class="text-right">Time Active (minutes)</th>
           <th class="text-right">Page Loads</th>
         </tr>
       </thead>

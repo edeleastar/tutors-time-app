@@ -27,6 +27,17 @@ export interface TutorsConnectUser {
   date_last_accessed: string | null; // timestamptz (ISO string)
 }
 
+// Supabase `learning_records` table model
+export interface LearningRecord {
+  course_id: string; // text not null
+  student_id: string; // text not null
+  lo_id: string | null; // text null
+  duration: number | null; // bigint null
+  count: number | null; // bigint null
+  date_last_accessed: string | null; // timestamptz null (ISO string)
+  type: string | null; // text null
+}
+
 // Aggregated per-course calendar view used by the grids
 export type CourseCalendar = {
   id: string; // original course ID
@@ -34,6 +45,9 @@ export type CourseCalendar = {
   data: CalendarEntry[];
   loading: boolean;
   error: string | null;
+  learningRecords: LearningRecord[];
+  learningRecordsLoading: boolean;
+  learningRecordsError: string | null;
 };
 
 

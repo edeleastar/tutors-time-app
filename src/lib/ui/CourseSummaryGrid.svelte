@@ -6,10 +6,11 @@
   import {
     getDistinctSortedWeeks,
     getDistinctSortedDates,
-    getMondayForDate,
     buildTotalSecondsColumn,
     selectTimeColumns,
-    type ViewMode
+    buildSummaryRow,
+    type ViewMode,
+    type SummaryRow
   } from "$lib/services/calendarUtils";
 
   ModuleRegistry.registerModules([AllCommunityModule]);
@@ -20,12 +21,6 @@
     error: string | null;
   }
 
-  type SummaryRow = {
-    courseid: string;
-    totalSeconds: number;
-    [key: string]: string | number;
-  };
-
   let { data, loading, error }: Props = $props();
 
   let gridContainer = $state<HTMLDivElement | null>(null);
@@ -35,39 +30,7 @@
   const weeks = $derived(getDistinctSortedWeeks(data));
   const dates = $derived(getDistinctSortedDates(data));
 
-  const summaryRow = $derived(
-    (() => {
-      if (!data.length) return null;
-      const courseid = data[0].courseid;
-      let totalSeconds = 0;
-      if (viewMode === "week") {
-        const totalsByWeek = new Map<string, number>();
-        for (const entry of data) {
-          const secs = entry.timeactive ?? 0;
-          totalSeconds += secs;
-          const weekMonday = getMondayForDate(entry.id);
-          totalsByWeek.set(weekMonday, (totalsByWeek.get(weekMonday) ?? 0) + secs);
-        }
-        const row: SummaryRow = { courseid, totalSeconds };
-        for (const weekMonday of weeks) {
-          row[weekMonday] = totalsByWeek.get(weekMonday) ?? 0;
-        }
-        return row;
-      } else {
-        const totalsByDate = new Map<string, number>();
-        for (const entry of data) {
-          const secs = entry.timeactive ?? 0;
-          totalSeconds += secs;
-          totalsByDate.set(entry.id, (totalsByDate.get(entry.id) ?? 0) + secs);
-        }
-        const row: SummaryRow = { courseid, totalSeconds };
-        for (const date of dates) {
-          row[date] = totalsByDate.get(date) ?? 0;
-        }
-        return row;
-      }
-    })()
-  );
+  const summaryRow = $derived(buildSummaryRow(data, weeks, dates, viewMode));
 
   const columnDefs = $derived.by((): ColDef<SummaryRow>[] => {
     const timeColumns = selectTimeColumns<SummaryRow>(viewMode, weeks, dates, true);
