@@ -25,7 +25,7 @@
 
   let gridContainer = $state<HTMLDivElement | null>(null);
   let gridApi = $state<GridApi<SummaryRow> | null>(null);
-  let viewMode = $state<ViewMode>("week");
+  let viewMode = $state<ViewMode>("day");
 
   const weeks = $derived(getDistinctSortedWeeks(data));
   const dates = $derived(getDistinctSortedDates(data));
@@ -40,7 +40,8 @@
         headerName: "Course ID",
         pinned: "left",
         minWidth: 200,
-        flex: 1
+        flex: 1,
+        cellStyle: { paddingLeft: '4px' }
       },
       buildTotalSecondsColumn<SummaryRow>("totalSeconds", "Total"),
       ...timeColumns

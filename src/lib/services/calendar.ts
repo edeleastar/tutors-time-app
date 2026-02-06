@@ -154,6 +154,32 @@ export async function loadCalendarDataForCourses(courseIds: string[], startDate:
             learningRecordsError = error.message;
           } else {
             learningRecords = (data as LearningRecord[]) ?? [];
+            
+            // Enrich learning records with student full names (similar to calendar entries)
+            const studentIds = Array.from(new Set(learningRecords.map((r) => r.student_id).filter(Boolean)));
+            if (studentIds.length > 0) {
+              const { data: userRows, error: userError } = await supabase
+                .from("tutors-connect-users")
+                .select("github_id, full_name")
+                .in("github_id", studentIds);
+
+              if (!userError && userRows) {
+                const nameMap: Record<string, string> = {};
+                for (const row of userRows as TutorsConnectUser[]) {
+                  const key = row.github_id?.trim();
+                  if (!key) continue;
+                  const displayName =
+                    row.full_name && row.full_name.trim().length > 0 ? row.full_name.trim() : key;
+                  nameMap[key] = displayName;
+                }
+
+                // Replace student_id with the full name (or leave as-is if no match)
+                learningRecords = learningRecords.map((record) => ({
+                  ...record,
+                  student_id: nameMap[record.student_id] ?? record.student_id,
+                }));
+              }
+            }
           }
         } catch (e) {
           learningRecordsError = e instanceof Error ? e.message : "Failed to load learning records";

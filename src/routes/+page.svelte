@@ -17,7 +17,7 @@
 
   // Course selection and tab state
   let selectedCourseId = $state<string | null>(null);
-  let activeTab = $state<"raw" | "calendar" | "summary" | "learning" | null>(null);
+  let activeTab = $state<"raw" | "calendar" | "summary" | "learning" | "labs" | null>(null);
 
   // Derived: find the selected course
   const selectedCourse = $derived(courses.find((c) => c.id === selectedCourseId) ?? null);

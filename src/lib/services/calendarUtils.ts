@@ -1,4 +1,4 @@
-import type { CalendarEntry } from '$lib/types';
+import type { CalendarEntry, LearningRecord } from '$lib/types';
 import type { ColDef } from 'ag-grid-community';
 
 // Shared view mode type for calendar grids.
@@ -7,6 +7,7 @@ export type ViewMode = 'week' | 'day';
 // Shared row types so grids can reuse aggregation helpers.
 export type PivotedRow = { studentid: string; totalSeconds: number; [key: string]: string | number };
 export type SummaryRow = { courseid: string; totalSeconds: number; [key: string]: string | number };
+export type LabsPivotedRow = { studentid: string; totalMinutes: number; [lo_id: string]: string | number };
 
 /** Return distinct sorted dates (ids) from calendar entries. */
 export function getDistinctSortedDates(entries: CalendarEntry[]): string[] {
@@ -107,9 +108,12 @@ export function buildTotalSecondsColumn<T = any>(
         ? String(Math.round((Number(p.value) * 30) / 60)) // 30-second blocks -> minutes
         : '',
     cellClass: 'ag-right-aligned-cell',
-    cellStyle: (p) => ({ backgroundColor: cellColorForMinutes(p.value as number) }),
-    width: 52,
-    maxWidth: 64,
+    cellStyle: (p) => ({ 
+      backgroundColor: cellColorForMinutes(p.value as number),
+      paddingLeft: '4px'
+    }),
+    width: 60,
+    maxWidth: 72,
   };
 }
 
@@ -127,9 +131,10 @@ export function buildPerDateTimeColumns<T = any>(dates: string[]): ColDef<T>[] {
     cellStyle: (p) => ({
       backgroundColor: cellColorForMinutes(p.value as number),
       textAlign: 'center',
+      paddingLeft: '4px',
     }),
-    width: 40,
-    maxWidth: 64,
+    width: 48,
+    maxWidth: 72,
   })) as ColDef<T>[];
 }
 
@@ -147,9 +152,10 @@ export function buildPerDateTimeColumnsMinutesOnly<T = any>(dates: string[]): Co
     cellStyle: (p) => ({
       backgroundColor: cellColorForMinutes(p.value as number),
       textAlign: 'center',
+      paddingLeft: '4px',
     }),
-    width: 40,
-    maxWidth: 64,
+    width: 48,
+    maxWidth: 72,
   })) as ColDef<T>[];
 }
 
@@ -191,9 +197,10 @@ export function buildPerWeekTimeColumns<T = any>(weeks: string[]): ColDef<T>[] {
     cellStyle: (p) => ({
       backgroundColor: cellColorForMinutes(p.value as number),
       textAlign: 'center',
+      paddingLeft: '4px',
     }),
-    width: 40,
-    maxWidth: 64,
+    width: 48,
+    maxWidth: 72,
   })) as ColDef<T>[];
 }
 
@@ -211,9 +218,10 @@ export function buildPerWeekTimeColumnsMinutesOnly<T = any>(weeks: string[]): Co
     cellStyle: (p) => ({
       backgroundColor: cellColorForMinutes(p.value as number),
       textAlign: 'center',
+      paddingLeft: '4px',
     }),
-    width: 40,
-    maxWidth: 64,
+    width: 48,
+    maxWidth: 72,
   })) as ColDef<T>[];
 }
 
@@ -336,5 +344,102 @@ export function selectTimeColumns<T>(
       ? buildPerDateTimeColumnsMinutesOnly<T>(dates)
       : buildPerDateTimeColumns<T>(dates);
   }
+}
+
+/** Return distinct sorted lab IDs (lo_id) from learning records, excluding null values. */
+export function getDistinctLabs(records: LearningRecord[]): string[] {
+  return Array.from(
+    new Set(
+      records
+        .map((r) => r.lo_id)
+        .filter((lo_id): lo_id is string => lo_id !== null && lo_id !== undefined)
+    )
+  ).sort();
+}
+
+/**
+ * Build pivoted per-student rows for LabsGrid.
+ * Each row has studentid, totalMinutes, and a column per lab (lo_id).
+ * Aggregates duration values for each (student_id, lo_id) combination.
+ */
+export function buildLabsPivotedRows(records: LearningRecord[]): LabsPivotedRow[] {
+  // Filter out records with null lo_id
+  const validRecords = records.filter((r) => r.lo_id !== null && r.lo_id !== undefined);
+  
+  if (validRecords.length === 0) {
+    return [];
+  }
+
+  const students = Array.from(new Set(validRecords.map((r) => r.student_id))).sort();
+  const labs = getDistinctLabs(validRecords);
+  
+  // Map to aggregate duration by (student_id, lo_id)
+  const map = new Map<string, number>();
+  
+  for (const record of validRecords) {
+    const key = `${record.student_id}\t${record.lo_id}`;
+    const duration = record.duration ?? 0;
+    map.set(key, (map.get(key) ?? 0) + duration);
+  }
+
+  // Build rows
+  return students.map((studentid) => {
+    let totalMinutes = 0;
+    const row: LabsPivotedRow = { studentid, totalMinutes: 0 };
+    
+    for (const labId of labs) {
+      const blocks = map.get(`${studentid}\t${labId}`) ?? 0;
+      row[labId] = blocks;
+      totalMinutes += blocks;
+    }
+    
+    row.totalMinutes = totalMinutes;
+    return row;
+  });
+}
+
+/** Column definitions for lab columns with shared styling/formatting. */
+export function buildLabColumns<T = any>(labIds: string[]): ColDef<T>[] {
+  return labIds.map((labId) => ({
+    field: labId as any,
+    headerName: labId,
+    headerClass: 'ag-header-vertical',
+    valueFormatter: (p) =>
+      p.value != null && Number(p.value) > 0
+        ? formatTimeMinutesOnly(Number(p.value))
+        : '',
+    cellClass: 'ag-right-aligned-cell',
+    cellStyle: (p) => ({
+      backgroundColor: cellColorForMinutes(p.value as number),
+      textAlign: 'center',
+      paddingLeft: '4px',
+    }),
+    width: 48,
+    maxWidth: 72,
+  })) as ColDef<T>[];
+}
+
+/** Column definition for a totalMinutes column with common styling and colouring. */
+export function buildTotalMinutesColumn<T = any>(
+  field: string = 'totalMinutes',
+  headerName = 'Total'
+): ColDef<T> {
+  return {
+    field: field as any,
+    headerName,
+    headerClass: 'ag-header-vertical',
+    sort: 'desc',
+    valueFormatter: (p) =>
+      p.value != null && Number(p.value) > 0
+        ? String(Math.round((Number(p.value) * 30) / 60)) // 30-second blocks -> minutes
+        : '',
+    cellClass: 'ag-right-aligned-cell',
+    cellStyle: (p) => ({ 
+      backgroundColor: cellColorForMinutes(p.value as number),
+      paddingLeft: '4px'
+    }),
+    width: 60,
+    maxWidth: 72,
+  };
 }
 
