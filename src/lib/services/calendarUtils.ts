@@ -393,14 +393,18 @@ export function getDistinctLabSteps(records: LearningRecord[]): string[] {
 
 /** Return distinct sorted lab identifiers (aggregated from lo_id) from learning records, excluding null values. */
 export function getDistinctLabs(records: LearningRecord[]): string[] {
-  return Array.from(
+  // Extract lab identifiers and ensure they're sorted properly
+  const labIdentifiers = Array.from(
     new Set(
       records
         .map((r) => r.lo_id)
         .filter((lo_id): lo_id is string => lo_id !== null && lo_id !== undefined)
         .map(extractLabIdentifier)
     )
-  ).sort();
+  );
+  
+  // Sort alphabetically to ensure consistent order
+  return labIdentifiers.sort((a, b) => a.localeCompare(b));
 }
 
 /**
@@ -417,17 +421,24 @@ export function buildLabsPivotedRows(records: LearningRecord[], viewMode: LabVie
     return [];
   }
 
-  const students = Array.from(new Set(validRecords.map((r) => r.student_id))).sort();
+  // Sort records by lo_id to ensure consistent processing order
+  const sortedRecords = [...validRecords].sort((a, b) => {
+    const aLoId = a.lo_id || '';
+    const bLoId = b.lo_id || '';
+    return aLoId.localeCompare(bLoId);
+  });
+
+  const students = Array.from(new Set(sortedRecords.map((r) => r.student_id))).sort();
   
-  // Get distinct columns based on view mode
+  // Get distinct columns based on view mode (using sorted records to ensure consistent order)
   const columns = viewMode === 'lab' 
-    ? getDistinctLabs(validRecords)
-    : getDistinctLabSteps(validRecords);
+    ? getDistinctLabs(sortedRecords)
+    : getDistinctLabSteps(sortedRecords);
   
   // Map to aggregate duration by (student_id, column_key)
   const map = new Map<string, number>();
   
-  for (const record of validRecords) {
+  for (const record of sortedRecords) {
     const columnKey = viewMode === 'lab' 
       ? extractLabIdentifier(record.lo_id!)
       : record.lo_id!;
