@@ -47,8 +47,7 @@ export function getDistinctLabs(records: LearningRecord[]): string[] {
         .map(extractLabIdentifier)
     )
   );
-
-  return labIdentifiers.sort((a, b) => a.localeCompare(b));
+  return labIdentifiers;
 }
 
 /**
