@@ -11,30 +11,16 @@ export const CourseTime = {
    * Load calendar data for a single course and date range.
    * Stores the result in CourseData and returns it.
    */
-  async loadCalendar(
-    courseId: string,
-    startDate: string | null,
-    endDate: string | null
-  ): Promise<CourseCalendar> {
-    const course = await CourseTime.loadCalendarDataForCourse(courseId, startDate, endDate);
-    CourseTime.CourseData = course;
-    return course;
-  },
-
-  /**
-   * Load calendar data for a single course with optional date filtering.
-   * Does not update CourseData; use loadCalendar for that.
-   */
-  async loadCalendarDataForCourse(
-    courseId: string,
-    startDate: string | null,
-    endDate: string | null
-  ): Promise<CourseCalendar> {
+  async loadCalendar(courseId: string, startDate: string | null, endDate: string | null): Promise<CourseCalendar> {
     const id = courseId.trim();
     if (!id) throw new Error("Course ID is required");
 
-    const titleMap = await CourseTime.getCourseTitles([id]);
-    const title = titleMap[id] || id;
+    // const titleMap = await CourseTime.getCourseTitles([id]);
+    //const title = titleMap[id] || id;
+    const title = await CourseTime.getCourseTitle(id);
+    console.log("title", title);
+
+    let course: CourseCalendar;
 
     try {
       const rawData = await CourseTime.getCalendarData(id);
@@ -48,7 +34,7 @@ export const CourseTime = {
         learningRecordsError = e instanceof Error ? e.message : "Failed to load learning records";
       }
 
-      return {
+      course = {
         id,
         title,
         data: filteredData,
@@ -60,7 +46,7 @@ export const CourseTime = {
       };
     } catch (e) {
       const msg = e instanceof Error ? e.message : "Failed to load calendar data";
-      return {
+      course = {
         id,
         title,
         data: [],
@@ -71,6 +57,9 @@ export const CourseTime = {
         learningRecordsError: msg
       };
     }
+
+    CourseTime.CourseData = course;
+    return course;
   },
 
   /**
@@ -157,44 +146,6 @@ export const CourseTime = {
       ...entry,
       studentid: nameMap[entry.studentid] ?? entry.studentid
     }));
-  },
-
-  /**
-   * Lookup course titles from tutors-connect-courses table.
-   * Returns a map from course_id -> title (or course_id if title not found).
-   */
-  async getCourseTitles(courseIds: string[]): Promise<Record<string, string>> {
-    const uniqueIds = Array.from(new Set(courseIds.map((id) => id.trim()).filter(Boolean)));
-    if (!uniqueIds.length) {
-      return {};
-    }
-
-    const supabase = getSupabase();
-    const { data, error } = await supabase.from("tutors-connect-courses").select("course_id, course_record").in("course_id", uniqueIds);
-
-    if (error) {
-      // On error, fall back to using course IDs as titles
-      return {};
-    }
-
-    const titleMap: Record<string, string> = {};
-    for (const row of (data ?? []) as TutorsConnectCourse[]) {
-      const courseId = row.course_id?.trim();
-      if (!courseId) continue;
-
-      // Extract title from course_record JSON, fallback to course_id
-      const title = row.course_record?.title?.trim() || courseId;
-      titleMap[courseId] = title;
-    }
-
-    // Ensure all requested IDs have at least a fallback
-    for (const id of uniqueIds) {
-      if (!titleMap[id]) {
-        titleMap[id] = id;
-      }
-    }
-
-    return titleMap;
   },
 
   /**
