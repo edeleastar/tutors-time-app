@@ -1,10 +1,9 @@
 <script lang="ts">
   import { Tabs } from "@skeletonlabs/skeleton-svelte";
   import CalendarTable from "$lib/ui/CalendarTable.svelte";
-  import CalendarByWeekGrid from "$lib/ui/CalendarByWeekGrid.svelte";
-  import CalendarByDayGrid from "$lib/ui/CalendarByDayGrid.svelte";
-  import CalendarSummaryByDayGrid from "$lib/ui/CalendarSummaryByDayGrid.svelte";
-  import CalendarSummaryByWeekGrid from "$lib/ui/CalendarSummaryByWeekGrid.svelte";
+  import CalendarGrid from "$lib/components/calendar/CalendarGrid.svelte";
+  import CalendarSummaryByDayGrid from "$lib/components/calendar/CalendarSummaryByDayGrid.svelte";
+  import CalendarSummaryByWeekGrid from "$lib/components/calendar/CalendarSummaryByWeekGrid.svelte";
   import LearningRecordsTable from "$lib/ui/LearningRecordsTable.svelte";
   import LabsGrid from "$lib/ui/LabsGrid.svelte";
   import type { CourseCalendar } from "$lib/types";
@@ -37,14 +36,14 @@
       <Tabs.Content value="week" class="flex-1 min-h-0">
         <div class="visual-tab-viewport h-full">
           {#if calendarModel}
-            <CalendarByWeekGrid model={calendarModel} />
+            <CalendarGrid model={calendarModel} mode="week" />
           {/if}
         </div>
       </Tabs.Content>
       <Tabs.Content value="day" class="flex-1 min-h-0">
         <div class="visual-tab-viewport h-full">
           {#if calendarModel}
-            <CalendarByDayGrid model={calendarModel} />
+            <CalendarGrid model={calendarModel} mode="day" />
           {/if}
         </div>
       </Tabs.Content>

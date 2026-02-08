@@ -1,6 +1,6 @@
 import type { LearningRecord } from "$lib/types";
 import type { ColDef } from "ag-grid-community";
-import { cellColorForMinutes, formatTimeMinutesOnly } from "./calendarUtils";
+import { cellColorForMinutes, formatTimeMinutesOnly } from "$lib/components/calendar/calendarUtils";
 
 /** View mode for labs grid (lab vs step). */
 export type LabViewMode = "lab" | "step";

@@ -38,7 +38,7 @@ export interface LearningRecord {
   type: string | null; // text null
 }
 
-import type { CalendarModel } from "$lib/services/CalendarModel";
+import type { CalendarModel } from "$lib/components/calendar/CalendarModel";
 
 // Aggregated per-course calendar view used by the grids
 export type CourseCalendar = {

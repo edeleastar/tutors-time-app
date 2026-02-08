@@ -9,7 +9,7 @@ import {
   buildSummaryRow,
   type PivotedRow,
   type SummaryRow
-} from "$lib/services/calendarUtils";
+} from "./calendarUtils";
 
 /** Prepared data for the day-view calendar grid. */
 export type CalendarDayView = {
@@ -32,7 +32,7 @@ export type CalendarSummaryView = {
 };
 
 /**
- * Calendar data prepared for CalendarByDayGrid, CalendarByWeekGrid, and CourseSummaryGrid.
+ * Calendar data prepared for CalendarGrid and CourseSummaryGrid.
  * Create an instance from raw entries and pass it to the grids.
  */
 export class CalendarModel {

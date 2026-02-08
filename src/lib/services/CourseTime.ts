@@ -1,6 +1,6 @@
 import type { CourseCalendar, LearningRecord, CalendarEntry } from "../types";
-import { CalendarModel } from "./CalendarModel";
-import { filterByDateRange } from "./calendarUtils";
+import { CalendarModel } from "$lib/components/calendar/CalendarModel";
+import { filterByDateRange } from "$lib/components/calendar/calendarUtils";
 import { getSupabase } from "./supabase";
 import type { TutorsConnectCourse, TutorsConnectUser } from "$lib/types";
 

@@ -1,5 +1,5 @@
 <script lang="ts">
-  import type { ViewMode } from '$lib/services/calendarUtils';
+  import type { ViewMode } from '$lib/components/calendar/calendarUtils';
 
   interface Props {
     viewMode: ViewMode;

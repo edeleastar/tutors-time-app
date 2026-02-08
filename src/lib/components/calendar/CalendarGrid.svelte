@@ -1,26 +1,34 @@
 <script lang="ts">
   import { createGrid, ModuleRegistry, AllCommunityModule } from "ag-grid-community";
   import type { GridApi } from "ag-grid-community";
-  import type { CalendarModel } from "$lib/services/CalendarModel";
-  import type { SummaryRow } from "$lib/services/calendarUtils";
+  import type { CalendarModel } from "$lib/components/calendar/CalendarModel";
+  import type { PivotedRow } from "$lib/components/calendar/calendarUtils";
 
   ModuleRegistry.registerModules([AllCommunityModule]);
 
+  type ViewMode = "day" | "week";
+
   interface Props {
     model: CalendarModel;
+    mode: ViewMode;
   }
 
-  let { model }: Props = $props();
+  let { model, mode }: Props = $props();
+
+  const view = $derived(mode === "day" ? model.day : model.week);
+  const ariaLabel = $derived(
+    mode === "day" ? "Course usage by student and day" : "Course usage by student and week"
+  );
 
   let gridContainer = $state<HTMLDivElement | null>(null);
-  let gridApi = $state<GridApi<SummaryRow> | null>(null);
+  let gridApi = $state<GridApi<PivotedRow> | null>(null);
 
   $effect(() => {
     const container = gridContainer;
     if (!container) return;
-    const api = createGrid<SummaryRow>(container, {
-      columnDefs: model.summary.columnDefsWeek,
-      rowData: model.summary.rowWeek ? [model.summary.rowWeek] : [],
+    const api = createGrid<PivotedRow>(container, {
+      columnDefs: view.columnDefs,
+      rowData: view.rows,
       loading: model.loading,
       defaultColDef: { sortable: true, resizable: true },
       domLayout: "normal",
@@ -37,28 +45,28 @@
   $effect(() => {
     const api = gridApi;
     if (api) {
-      api.setGridOption("columnDefs", model.summary.columnDefsWeek);
-      api.setGridOption("rowData", model.summary.rowWeek ? [model.summary.rowWeek] : []);
+      api.setGridOption("columnDefs", view.columnDefs);
+      api.setGridOption("rowData", view.rows);
       api.setGridOption("loading", model.loading);
     }
   });
 </script>
 
-{#if model.loading && !model.hasSummary}
+{#if model.loading && !model.hasData}
   <div class="flex items-center justify-center p-8">
-    <p class="text-lg">Loading course summary...</p>
+    <p class="text-lg">Loading calendar data...</p>
   </div>
 {:else if model.error}
   <div class="card preset-filled-error-500 p-4">
-    <p class="font-bold">Error loading summary</p>
+    <p class="font-bold">Error loading data</p>
     <p class="text-sm">{model.error}</p>
   </div>
-{:else if !model.hasSummary}
+{:else if !model.hasData}
   <div class="flex items-center justify-center p-8">
-    <p class="text-lg text-surface-600">No summary available for this course</p>
+    <p class="text-lg text-surface-600">No calendar data available</p>
   </div>
 {:else}
-  <div class="ag-theme-quartz grid-fill-container h-full min-h-0" role="grid" aria-label="Course summary by week">
+  <div class="ag-theme-quartz grid-fill-container h-full min-h-0" role="grid" aria-label={ariaLabel}>
     <div bind:this={gridContainer} class="grid-fill-container"></div>
   </div>
 {/if}
