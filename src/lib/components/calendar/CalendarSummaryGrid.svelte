@@ -6,11 +6,19 @@
 
   ModuleRegistry.registerModules([AllCommunityModule]);
 
+  type SummaryMode = "day" | "week";
+
   interface Props {
     model: CalendarModel;
+    mode: SummaryMode;
   }
 
-  let { model }: Props = $props();
+  let { model, mode }: Props = $props();
+
+  const columnDefs = $derived(mode === "day" ? model.summary.columnDefsDay : model.summary.columnDefsWeek);
+  const row = $derived(mode === "day" ? model.summary.rowDay : model.summary.rowWeek);
+  const rowData = $derived(row ? [row] : []);
+  const ariaLabel = $derived(mode === "day" ? "Course summary by day" : "Course summary by week");
 
   let gridContainer = $state<HTMLDivElement | null>(null);
   let gridApi = $state<GridApi<SummaryRow> | null>(null);
@@ -19,8 +27,8 @@
     const container = gridContainer;
     if (!container) return;
     const api = createGrid<SummaryRow>(container, {
-      columnDefs: model.summary.columnDefsWeek,
-      rowData: model.summary.rowWeek ? [model.summary.rowWeek] : [],
+      columnDefs,
+      rowData,
       loading: model.loading,
       defaultColDef: { sortable: true, resizable: true },
       domLayout: "normal",
@@ -37,8 +45,8 @@
   $effect(() => {
     const api = gridApi;
     if (api) {
-      api.setGridOption("columnDefs", model.summary.columnDefsWeek);
-      api.setGridOption("rowData", model.summary.rowWeek ? [model.summary.rowWeek] : []);
+      api.setGridOption("columnDefs", columnDefs);
+      api.setGridOption("rowData", rowData);
       api.setGridOption("loading", model.loading);
     }
   });
@@ -58,7 +66,7 @@
     <p class="text-lg text-surface-600">No summary available for this course</p>
   </div>
 {:else}
-  <div class="ag-theme-quartz grid-fill-container h-full min-h-0" role="grid" aria-label="Course summary by week">
+  <div class="ag-theme-quartz grid-fill-container h-full min-h-0" role="grid" aria-label={ariaLabel}>
     <div bind:this={gridContainer} class="grid-fill-container"></div>
   </div>
 {/if}

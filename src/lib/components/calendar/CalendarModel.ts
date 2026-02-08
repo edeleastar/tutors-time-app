@@ -32,7 +32,7 @@ export type CalendarSummaryView = {
 };
 
 /**
- * Calendar data prepared for CalendarGrid and CourseSummaryGrid.
+ * Calendar data prepared for CalendarGrid and CalendarSummaryGrid.
  * Create an instance from raw entries and pass it to the grids.
  */
 export class CalendarModel {

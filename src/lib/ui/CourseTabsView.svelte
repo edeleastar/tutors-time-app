@@ -2,8 +2,7 @@
   import { Tabs } from "@skeletonlabs/skeleton-svelte";
   import CalendarTable from "$lib/ui/CalendarTable.svelte";
   import CalendarGrid from "$lib/components/calendar/CalendarGrid.svelte";
-  import CalendarSummaryByDayGrid from "$lib/components/calendar/CalendarSummaryByDayGrid.svelte";
-  import CalendarSummaryByWeekGrid from "$lib/components/calendar/CalendarSummaryByWeekGrid.svelte";
+  import CalendarSummaryGrid from "$lib/components/calendar/CalendarSummaryGrid.svelte";
   import LearningRecordsTable from "$lib/ui/LearningRecordsTable.svelte";
   import LabsGrid from "$lib/ui/LabsGrid.svelte";
   import type { CourseCalendar } from "$lib/types";
@@ -50,14 +49,14 @@
       <Tabs.Content value="summaryDay" class="flex-1 min-h-0">
         <div class="summary-tab-viewport h-full">
           {#if calendarModel}
-            <CalendarSummaryByDayGrid model={calendarModel} />
+            <CalendarSummaryGrid model={calendarModel} mode="day" />
           {/if}
         </div>
       </Tabs.Content>
       <Tabs.Content value="summaryWeek" class="flex-1 min-h-0">
         <div class="summary-tab-viewport h-full">
           {#if calendarModel}
-            <CalendarSummaryByWeekGrid model={calendarModel} />
+            <CalendarSummaryGrid model={calendarModel} mode="week" />
           {/if}
         </div>
       </Tabs.Content>
