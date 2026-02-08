@@ -4,7 +4,7 @@
   import CalendarGrid from "$lib/components/calendar/CalendarGrid.svelte";
   import CalendarSummaryGrid from "$lib/components/calendar/CalendarSummaryGrid.svelte";
   import LearningRecordsTable from "$lib/ui/LearningRecordsTable.svelte";
-  import LabsGrid from "$lib/ui/LabsGrid.svelte";
+  import LabsGrid from "$lib/components/labs/LabsGrid.svelte";
   import type { CourseCalendar } from "$lib/types";
 
   type TabValue = "week" | "day" | "summaryDay" | "summaryWeek" | "raw" | "learning" | "labs";
@@ -17,6 +17,7 @@
   let { selectedCourse, activeTab = $bindable() }: Props = $props();
 
   const calendarModel = $derived(selectedCourse?.calendarModel ?? null);
+  const labsModel = $derived(selectedCourse?.labsModel ?? null);
 </script>
 
 <main class="flex-1 min-w-0 flex flex-col">
@@ -72,11 +73,9 @@
       </Tabs.Content>
       <Tabs.Content value="labs" class="flex-1 min-h-0">
         <div class="visual-tab-viewport h-full">
-          <LabsGrid 
-            data={selectedCourse.learningRecords} 
-            loading={selectedCourse.learningRecordsLoading} 
-            error={selectedCourse.learningRecordsError} 
-          />
+          {#if labsModel}
+            <LabsGrid model={labsModel} />
+          {/if}
         </div>
       </Tabs.Content>
     </Tabs>

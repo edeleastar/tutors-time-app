@@ -39,6 +39,7 @@ export interface LearningRecord {
 }
 
 import type { CalendarModel } from "$lib/components/calendar/CalendarModel";
+import type { LabsModel } from "$lib/components/labs/LabsModel";
 
 // Aggregated per-course calendar view used by the grids
 export type CourseCalendar = {
@@ -52,6 +53,8 @@ export type CourseCalendar = {
   learningRecordsError: string | null;
   /** Prepared day/week/summary views for calendar grids. Initialised in loadCalendar. */
   calendarModel: CalendarModel;
+  /** Prepared lab/step views for LabsGrid. Initialised in loadCalendar. */
+  labsModel: LabsModel;
 };
 
 
