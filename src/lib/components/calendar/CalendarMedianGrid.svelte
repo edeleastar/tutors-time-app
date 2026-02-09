@@ -15,10 +15,11 @@
 
   let { model, mode }: Props = $props();
 
-  const columnDefs = $derived(mode === "day" ? model.summary.columnDefsDay : model.summary.columnDefsWeek);
-  const row = $derived(mode === "day" ? model.summary.rowDay : model.summary.rowWeek);
+  const columnDefs = $derived(mode === "day" ? model.medianByDay.columnDefs : model.medianByWeek.columnDefs);
+  const row = $derived(mode === "day" ? model.medianByDay.row : model.medianByWeek.row);
   const rowData = $derived(row ? [row] : []);
-  const ariaLabel = $derived(mode === "day" ? "Course summary by day" : "Course summary by week");
+  const hasData = $derived(mode === "day" ? model.hasMedianByDay : model.hasMedianByWeek);
+  const ariaLabel = $derived(mode === "day" ? "Course median by day" : "Course median by week");
 
   let gridContainer = $state<HTMLDivElement | null>(null);
   let gridApi = $state<GridApi<SummaryRow> | null>(null);
@@ -52,7 +53,7 @@
   });
 </script>
 
-{#if model.loading && !model.hasSummary}
+{#if model.loading && !hasData}
   <div class="flex items-center justify-center p-8">
     <p class="text-lg">Loading course summary...</p>
   </div>
@@ -61,7 +62,7 @@
     <p class="font-bold">Error loading summary</p>
     <p class="text-sm">{model.error}</p>
   </div>
-{:else if !model.hasSummary}
+{:else if !hasData}
   <div class="flex items-center justify-center p-8">
     <p class="text-lg text-surface-600">No summary available for this course</p>
   </div>

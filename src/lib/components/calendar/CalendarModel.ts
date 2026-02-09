@@ -6,7 +6,8 @@ import {
   buildTotalSecondsColumn,
   selectTimeColumns,
   buildPivotedRows,
-  buildSummaryRow,
+  buildMedianByDay,
+  buildMedianByWeek,
   type PivotedRow,
   type SummaryRow
 } from "./calendarUtils";
@@ -23,22 +24,27 @@ export type CalendarWeekView = {
   columnDefs: ColDef<PivotedRow>[];
 };
 
-/** Prepared data for the summary grid (one row, day or week columns). */
-export type CalendarSummaryView = {
-  rowDay: SummaryRow | null;
-  columnDefsDay: ColDef<SummaryRow>[];
-  rowWeek: SummaryRow | null;
-  columnDefsWeek: ColDef<SummaryRow>[];
+/** Prepared data for the median-by-day grid (one row with medians per date). */
+export type CalendarMedianByDayView = {
+  row: SummaryRow | null;
+  columnDefs: ColDef<SummaryRow>[];
+};
+
+/** Prepared data for the median-by-week grid (one row with sums of medians per week). */
+export type CalendarMedianByWeekView = {
+  row: SummaryRow | null;
+  columnDefs: ColDef<SummaryRow>[];
 };
 
 /**
- * Calendar data prepared for CalendarGrid and CalendarSummaryGrid.
+ * Calendar data prepared for CalendarGrid and CalendarMedianGrid.
  * Create an instance from raw entries and pass it to the grids.
  */
 export class CalendarModel {
   readonly day: CalendarDayView;
   readonly week: CalendarWeekView;
-  readonly summary: CalendarSummaryView;
+  readonly medianByDay: CalendarMedianByDayView;
+  readonly medianByWeek: CalendarMedianByWeekView;
   readonly loading: boolean;
   readonly error: string | null;
 
@@ -51,7 +57,8 @@ export class CalendarModel {
 
     this.day = this.buildDayView(entries, weeks, dates);
     this.week = this.buildWeekView(entries, weeks, dates);
-    this.summary = this.buildSummaryView(entries, weeks, dates);
+    this.medianByDay = this.buildMedianByDayView(entries, dates);
+    this.medianByWeek = this.buildMedianByWeekView(entries, weeks, dates);
   }
 
   private buildDayView(entries: CalendarEntry[], weeks: string[], dates: string[]): CalendarDayView {
@@ -90,16 +97,23 @@ export class CalendarModel {
     return { rows, columnDefs };
   }
 
-  private buildSummaryView(
-    entries: CalendarEntry[],
-    weeks: string[],
-    dates: string[]
-  ): CalendarSummaryView {
-    const rowDay = buildSummaryRow(entries, weeks, dates, "day");
-    const rowWeek = buildSummaryRow(entries, weeks, dates, "week");
-    const timeColumnsDay = selectTimeColumns<SummaryRow>("day", weeks, dates, true);
-    const timeColumnsWeek = selectTimeColumns<SummaryRow>("week", weeks, dates, true);
-    const columnDefsDay: ColDef<SummaryRow>[] = [
+  get hasData(): boolean {
+    return this.day.rows.length > 0;
+  }
+
+  get hasMedianByDay(): boolean {
+    return this.medianByDay.row != null;
+  }
+
+  get hasMedianByWeek(): boolean {
+    return this.medianByWeek.row != null;
+  }
+
+  private buildMedianByDayView(entries: CalendarEntry[], dates: string[]): CalendarMedianByDayView {
+    const courseid = entries.length > 0 ? entries[0].courseid : "";
+    const row = buildMedianByDay(entries, courseid, dates);
+    const timeColumnsDay = selectTimeColumns<SummaryRow>("day", [], dates, true);
+    const columnDefs: ColDef<SummaryRow>[] = [
       {
         field: "courseid",
         headerName: "Course ID",
@@ -111,7 +125,19 @@ export class CalendarModel {
       buildTotalSecondsColumn<SummaryRow>("totalSeconds", "Total"),
       ...timeColumnsDay
     ];
-    const columnDefsWeek: ColDef<SummaryRow>[] = [
+    return { row, columnDefs };
+  }
+
+  private buildMedianByWeekView(
+    entries: CalendarEntry[],
+    weeks: string[],
+    dates: string[]
+  ): CalendarMedianByWeekView {
+    const courseid = entries.length > 0 ? entries[0].courseid : "";
+    const medianByDayRow = this.medianByDay.row;
+    const row = buildMedianByWeek(medianByDayRow, courseid, weeks, dates);
+    const timeColumnsWeek = selectTimeColumns<SummaryRow>("week", weeks, dates, true);
+    const columnDefs: ColDef<SummaryRow>[] = [
       {
         field: "courseid",
         headerName: "Course ID",
@@ -123,14 +149,6 @@ export class CalendarModel {
       buildTotalSecondsColumn<SummaryRow>("totalSeconds", "Total"),
       ...timeColumnsWeek
     ];
-    return { rowDay, columnDefsDay, rowWeek, columnDefsWeek };
-  }
-
-  get hasData(): boolean {
-    return this.day.rows.length > 0;
-  }
-
-  get hasSummary(): boolean {
-    return this.summary.rowDay != null || this.summary.rowWeek != null;
+    return { row, columnDefs };
   }
 }

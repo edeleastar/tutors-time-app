@@ -23,8 +23,8 @@
   const columnDefs = $derived(
     isSummary
       ? mode === "day"
-        ? model.summary.columnDefsDay
-        : model.summary.columnDefsWeek
+        ? model.medianByDay.columnDefs
+        : model.medianByWeek.columnDefs
       : mode === "day"
         ? model.day.columnDefs
         : model.week.columnDefs
@@ -33,7 +33,7 @@
   const rowData = $derived(
     isSummary
       ? (() => {
-          const row = mode === "day" ? model.summary.rowDay : model.summary.rowWeek;
+          const row = mode === "day" ? model.medianByDay.row : model.medianByWeek.row;
           return row ? [row] : [];
         })()
       : mode === "day"
@@ -41,13 +41,19 @@
         : model.week.rows
   );
 
-  const hasData = $derived(isSummary ? model.hasSummary : model.hasData);
+  const hasData = $derived(
+    isSummary
+      ? mode === "day"
+        ? model.hasMedianByDay
+        : model.hasMedianByWeek
+      : model.hasData
+  );
 
   const ariaLabel = $derived(
     isSummary
       ? mode === "day"
         ? "Course median by day"
-        : "Course summary by week"
+        : "Course median by week"
       : mode === "day"
         ? "Course usage by student and day"
         : "Course usage by student and week"
