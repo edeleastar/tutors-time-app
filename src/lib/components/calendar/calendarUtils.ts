@@ -334,7 +334,53 @@ export function buildMedianByDay(
 }
 
 /**
- * Build a single summary row for CourseSummaryGrid, based on viewMode.
+ * Build a median row for week view, aggregating daily medians into weekly sums.
+ * Takes the medianByDay row and groups dates by week, calculating the sum of daily medians for each week.
+ * @param medianByDayRow The SummaryRow from buildMedianByDay containing daily medians
+ * @param courseid Course ID
+ * @param weeks Array of week Monday dates (YYYY-MM-DD format)
+ * @param dates Array of date strings (YYYY-MM-DD format)
+ * @returns SummaryRow with sums of medians per week, or null if medianByDayRow is null
+ */
+export function buildMedianByWeek(
+  medianByDayRow: SummaryRow | null,
+  courseid: string,
+  weeks: string[],
+  dates: string[]
+): SummaryRow | null {
+  if (!medianByDayRow) return null;
+
+  const row: SummaryRow = { courseid, totalSeconds: 0 };
+
+  // Group daily medians by week and sum them
+  const sumsByWeek = new Map<string, number>();
+  for (const date of dates) {
+    const dateMedian = (medianByDayRow[date] as number) ?? 0;
+    if (dateMedian > 0) {
+      const weekMonday = getMondayForDate(date);
+      const currentSum = sumsByWeek.get(weekMonday) ?? 0;
+      sumsByWeek.set(weekMonday, currentSum + dateMedian);
+    }
+  }
+
+  // Calculate sum for each week (sum of all daily medians in that week)
+  const allWeekSums: number[] = [];
+  for (const weekMonday of weeks) {
+    const weekSum = sumsByWeek.get(weekMonday) ?? 0;
+    row[weekMonday] = weekSum;
+    if (weekSum > 0) {
+      allWeekSums.push(weekSum);
+    }
+  }
+
+  // Overall total is the median of all week sums
+  row.totalSeconds = median(allWeekSums);
+
+  return row;
+}
+
+/**
+ * Build a single summary row for CalendarMedianGrid, based on viewMode.
  * Row has courseid, totalSeconds, and a column per week or date.
  */
 export function buildSummaryRow(entries: CalendarEntry[], weeks: string[], dates: string[], viewMode: ViewMode): SummaryRow | null {
@@ -370,7 +416,7 @@ export function toggleViewMode(current: ViewMode): ViewMode {
 
 /**
  * Helper to select time columns (week/day, minutes or hours+minutes)
- * so that CalendarGrid and CourseSummaryGrid share the same logic.
+ * so that CalendarGrid and CalendarMedianGrid share the same logic.
  */
 export function selectTimeColumns<T>(viewMode: ViewMode, weeks: string[], dates: string[], useMinutesOnly: boolean = false): ColDef<T>[] {
   if (viewMode === "week") {
