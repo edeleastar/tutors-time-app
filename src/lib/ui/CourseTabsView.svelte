@@ -33,7 +33,7 @@
       <Tabs.List class="shrink-0">
         <Tabs.Trigger value="week">By week</Tabs.Trigger>
         <Tabs.Trigger value="day">By day</Tabs.Trigger>
-        <Tabs.Trigger value="summaryDay">Summary by day</Tabs.Trigger>
+        <Tabs.Trigger value="summaryDay">Median by day</Tabs.Trigger>
         <Tabs.Trigger value="summaryWeek">Summary by week</Tabs.Trigger>
         <Tabs.Trigger value="raw">Raw Calendar</Tabs.Trigger>
         <Tabs.Trigger value="learning">Lab Learning Records</Tabs.Trigger>

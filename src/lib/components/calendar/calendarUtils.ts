@@ -28,6 +28,35 @@ export function getDistinctSortedDates(entries: CalendarEntry[]): string[] {
   return Array.from(new Set(entries.map((e) => e.id))).sort();
 }
 
+/** Compute the median of a list of numbers. Returns 0 for empty input. */
+function median(values: number[]): number {
+  if (!values.length) return 0;
+  const sorted = [...values].sort((a, b) => a - b);
+  const n = sorted.length;
+  const mid = Math.floor(n / 2);
+  if (n % 2 === 1) {
+    return sorted[mid];
+  }
+  const lower = sorted[mid - 1];
+  const upper = sorted[mid];
+  return Math.round((lower + upper) / 2);
+}
+
+/**
+ * Get the median duration (timeactive) for all entries on a specific date.
+ * @param entries Array of calendar entries
+ * @param date Date string in YYYY-MM-DD format
+ * @returns Median duration in 30-second blocks, or 0 if no entries for that date
+ */
+export function getMedianForDate(entries: CalendarEntry[], date: string): number {
+  const entriesForDate = entries.filter((entry) => entry.id === date);
+  if (entriesForDate.length === 0) {
+    return 0;
+  }
+  const durations = entriesForDate.map((entry) => entry.timeactive ?? 0);
+  return median(durations);
+}
+
 /** Compressed date for column headers to minimize width (e.g. "3/2/25" for 3 Feb 2025). */
 export function formatDateShort(dateString: string): string {
   try {
@@ -292,16 +321,26 @@ export function buildSummaryRow(entries: CalendarEntry[], weeks: string[], dates
     }
     return row;
   } else {
-    const totalsByDate = new Map<string, number>();
+    // Day view: use medians instead of totals
+    const row: SummaryRow = { courseid, totalSeconds: 0 };
+    
+    // Calculate median for each date using getMedianForDate
+    for (const date of dates) {
+      const dateMedian = getMedianForDate(entries, date);
+      row[date] = dateMedian;
+    }
+    
+    // Calculate overall median (median of all per-student totals)
+    const students = Array.from(new Set(entries.map((e) => e.studentid))).sort();
+    const totalsByStudent = new Map<string, number>();
     for (const entry of entries) {
       const secs = entry.timeactive ?? 0;
-      totalSeconds += secs;
-      totalsByDate.set(entry.id, (totalsByDate.get(entry.id) ?? 0) + secs);
+      const current = totalsByStudent.get(entry.studentid) ?? 0;
+      totalsByStudent.set(entry.studentid, current + secs);
     }
-    const row: SummaryRow = { courseid, totalSeconds };
-    for (const date of dates) {
-      row[date] = totalsByDate.get(date) ?? 0;
-    }
+    const studentTotals = students.map((studentid) => totalsByStudent.get(studentid) ?? 0);
+    row.totalSeconds = median(studentTotals);
+    
     return row;
   }
 }

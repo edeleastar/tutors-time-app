@@ -46,7 +46,7 @@
   const ariaLabel = $derived(
     isSummary
       ? mode === "day"
-        ? "Course summary by day"
+        ? "Course median by day"
         : "Course summary by week"
       : mode === "day"
         ? "Course usage by student and day"
