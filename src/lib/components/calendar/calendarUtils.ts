@@ -298,6 +298,42 @@ export function buildPivotedRows(entries: CalendarEntry[], weeks: string[], date
 }
 
 /**
+ * Build a median row for day view, calculating median duration for each date.
+ * @param entries Array of calendar entries
+ * @param courseid Course ID
+ * @param dates Array of date strings (YYYY-MM-DD format)
+ * @returns SummaryRow with medians per date, or null if no entries
+ */
+export function buildMedianByDay(
+  entries: CalendarEntry[],
+  courseid: string,
+  dates: string[]
+): SummaryRow | null {
+  if (!entries.length) return null;
+
+  const row: SummaryRow = { courseid, totalSeconds: 0 };
+
+  // Calculate median for each date using getMedianForDate
+  for (const date of dates) {
+    const dateMedian = getMedianForDate(entries, date);
+    row[date] = dateMedian;
+  }
+
+  // Calculate overall median (median of all per-student totals)
+  const students = Array.from(new Set(entries.map((e) => e.studentid))).sort();
+  const totalsByStudent = new Map<string, number>();
+  for (const entry of entries) {
+    const secs = entry.timeactive ?? 0;
+    const current = totalsByStudent.get(entry.studentid) ?? 0;
+    totalsByStudent.set(entry.studentid, current + secs);
+  }
+  const studentTotals = students.map((studentid) => totalsByStudent.get(studentid) ?? 0);
+  row.totalSeconds = median(studentTotals);
+
+  return row;
+}
+
+/**
  * Build a single summary row for CourseSummaryGrid, based on viewMode.
  * Row has courseid, totalSeconds, and a column per week or date.
  */
@@ -305,43 +341,22 @@ export function buildSummaryRow(entries: CalendarEntry[], weeks: string[], dates
   if (!entries.length) return null;
 
   const courseid = entries[0].courseid;
-  let totalSeconds = 0;
 
   if (viewMode === "week") {
     const totalsByWeek = new Map<string, number>();
     for (const entry of entries) {
       const secs = entry.timeactive ?? 0;
-      totalSeconds += secs;
       const weekMonday = getMondayForDate(entry.id);
       totalsByWeek.set(weekMonday, (totalsByWeek.get(weekMonday) ?? 0) + secs);
     }
-    const row: SummaryRow = { courseid, totalSeconds };
+    const row: SummaryRow = { courseid, totalSeconds: 0 };
     for (const weekMonday of weeks) {
       row[weekMonday] = totalsByWeek.get(weekMonday) ?? 0;
     }
     return row;
   } else {
-    // Day view: use medians instead of totals
-    const row: SummaryRow = { courseid, totalSeconds: 0 };
-    
-    // Calculate median for each date using getMedianForDate
-    for (const date of dates) {
-      const dateMedian = getMedianForDate(entries, date);
-      row[date] = dateMedian;
-    }
-    
-    // Calculate overall median (median of all per-student totals)
-    const students = Array.from(new Set(entries.map((e) => e.studentid))).sort();
-    const totalsByStudent = new Map<string, number>();
-    for (const entry of entries) {
-      const secs = entry.timeactive ?? 0;
-      const current = totalsByStudent.get(entry.studentid) ?? 0;
-      totalsByStudent.set(entry.studentid, current + secs);
-    }
-    const studentTotals = students.map((studentid) => totalsByStudent.get(studentid) ?? 0);
-    row.totalSeconds = median(studentTotals);
-    
-    return row;
+    // Day view: use buildMedianByDay
+    return buildMedianByDay(entries, courseid, dates);
   }
 }
 
