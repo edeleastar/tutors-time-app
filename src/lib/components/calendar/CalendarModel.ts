@@ -78,7 +78,14 @@ export class CalendarModel {
         headerName: "Student ID",
         minWidth: 120,
         pinned: "left",
-        cellStyle: { paddingLeft: "4px" }
+        cellStyle: { paddingLeft: "4px" },
+        cellRenderer: (params) => {
+          const studentId = String(params.value ?? "");
+          const courseId = String((params.data as any)?.courseid ?? "");
+          if (!studentId || !courseId) return studentId;
+          const href = `/${courseId}/${studentId}`;
+          return `<a href="${href}" class="underline text-primary-600">${studentId}</a>`;
+        }
       },
       buildTotalSecondsColumn<PivotedRow>("totalSeconds", "Total"),
       ...timeColumns
@@ -103,7 +110,14 @@ export class CalendarModel {
         headerName: "Student ID",
         minWidth: 120,
         pinned: "left",
-        cellStyle: { paddingLeft: "4px" }
+        cellStyle: { paddingLeft: "4px" },
+        cellRenderer: (params) => {
+          const studentId = String(params.value ?? "");
+          const courseId = String((params.data as any)?.courseid ?? "");
+          if (!studentId || !courseId) return studentId;
+          const href = `/${courseId}/${studentId}`;
+          return `<a href="${href}" class="underline text-primary-600">${studentId}</a>`;
+        }
       },
       buildTotalSecondsColumn<PivotedRow>("totalSeconds", "Total"),
       ...timeColumns

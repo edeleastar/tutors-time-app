@@ -6,6 +6,7 @@ export type ViewMode = "week" | "day";
 
 // Shared row types so grids can reuse aggregation helpers.
 export type PivotedRow = {
+  courseid: string;
   studentid: string;
   full_name: string;
   totalSeconds: number;
@@ -264,6 +265,7 @@ export function buildPerWeekTimeColumnsMinutesOnly<T = any>(weeks: string[]): Co
  */
 export function buildPivotedRows(entries: CalendarEntry[], weeks: string[], dates: string[], viewMode: ViewMode): PivotedRow[] {
   const students = Array.from(new Set(entries.map((e) => e.studentid))).sort();
+  const courseId = entries.length > 0 ? entries[0].courseid : "";
   const nameMap = new Map<string, string>();
 
   for (const e of entries) {
@@ -283,6 +285,7 @@ export function buildPivotedRows(entries: CalendarEntry[], weeks: string[], date
     return students.map((studentid) => {
       let totalSeconds = 0;
       const row: PivotedRow = {
+        courseid: courseId,
         studentid,
         full_name: nameMap.get(studentid) ?? studentid,
         totalSeconds: 0
@@ -303,6 +306,7 @@ export function buildPivotedRows(entries: CalendarEntry[], weeks: string[], date
     return students.map((studentid) => {
       let totalSeconds = 0;
       const row: PivotedRow = {
+        courseid: courseId,
         studentid,
         full_name: nameMap.get(studentid) ?? studentid,
         totalSeconds: 0
