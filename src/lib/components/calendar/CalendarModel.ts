@@ -66,10 +66,17 @@ export class CalendarModel {
     const timeColumns = selectTimeColumns<PivotedRow>("day", weeks, dates, true);
     const columnDefs: ColDef<PivotedRow>[] = [
       {
+        field: "full_name",
+        headerName: "Student",
+        minWidth: 160,
+        flex: 1,
+        pinned: "left",
+        cellStyle: { paddingLeft: "4px" }
+      },
+      {
         field: "studentid",
         headerName: "Student ID",
         minWidth: 120,
-        flex: 1,
         pinned: "left",
         cellStyle: { paddingLeft: "4px" }
       },
@@ -84,10 +91,17 @@ export class CalendarModel {
     const timeColumns = selectTimeColumns<PivotedRow>("week", weeks, dates, true);
     const columnDefs: ColDef<PivotedRow>[] = [
       {
+        field: "full_name",
+        headerName: "Student",
+        minWidth: 160,
+        flex: 1,
+        pinned: "left",
+        cellStyle: { paddingLeft: "4px" }
+      },
+      {
         field: "studentid",
         headerName: "Student ID",
         minWidth: 120,
-        flex: 1,
         pinned: "left",
         cellStyle: { paddingLeft: "4px" }
       },
@@ -114,14 +128,6 @@ export class CalendarModel {
     const row = buildMedianByDay(entries, courseid, dates);
     const timeColumnsDay = selectTimeColumns<SummaryRow>("day", [], dates, true);
     const columnDefs: ColDef<SummaryRow>[] = [
-      {
-        field: "courseid",
-        headerName: "Course ID",
-        pinned: "left",
-        minWidth: 200,
-        flex: 1,
-        cellStyle: { paddingLeft: "4px" }
-      },
       buildTotalSecondsColumn<SummaryRow>("totalSeconds", "Total"),
       ...timeColumnsDay
     ];
@@ -138,14 +144,6 @@ export class CalendarModel {
     const row = buildMedianByWeek(medianByDayRow, courseid, weeks, dates);
     const timeColumnsWeek = selectTimeColumns<SummaryRow>("week", weeks, dates, true);
     const columnDefs: ColDef<SummaryRow>[] = [
-      {
-        field: "courseid",
-        headerName: "Course ID",
-        pinned: "left",
-        minWidth: 200,
-        flex: 1,
-        cellStyle: { paddingLeft: "4px" }
-      },
       buildTotalSecondsColumn<SummaryRow>("totalSeconds", "Total"),
       ...timeColumnsWeek
     ];

@@ -5,7 +5,12 @@ import type { ColDef } from "ag-grid-community";
 export type ViewMode = "week" | "day";
 
 // Shared row types so grids can reuse aggregation helpers.
-export type PivotedRow = { studentid: string; totalSeconds: number; [key: string]: string | number };
+export type PivotedRow = {
+  studentid: string;
+  full_name: string;
+  totalSeconds: number;
+  [key: string]: string | number;
+};
 export type SummaryRow = { courseid: string; totalSeconds: number; [key: string]: string | number };
 
 /** Filter calendar entries by date range (inclusive). */
@@ -259,6 +264,14 @@ export function buildPerWeekTimeColumnsMinutesOnly<T = any>(weeks: string[]): Co
  */
 export function buildPivotedRows(entries: CalendarEntry[], weeks: string[], dates: string[], viewMode: ViewMode): PivotedRow[] {
   const students = Array.from(new Set(entries.map((e) => e.studentid))).sort();
+  const nameMap = new Map<string, string>();
+
+  for (const e of entries) {
+    if (!nameMap.has(e.studentid)) {
+      nameMap.set(e.studentid, e.full_name ?? e.studentid);
+    }
+  }
+
   const map = new Map<string, number>();
 
   if (viewMode === "week") {
@@ -269,7 +282,11 @@ export function buildPivotedRows(entries: CalendarEntry[], weeks: string[], date
     }
     return students.map((studentid) => {
       let totalSeconds = 0;
-      const row: PivotedRow = { studentid, totalSeconds: 0 };
+      const row: PivotedRow = {
+        studentid,
+        full_name: nameMap.get(studentid) ?? studentid,
+        totalSeconds: 0
+      };
       for (const weekMonday of weeks) {
         const secs = map.get(`${studentid}\t${weekMonday}`) ?? 0;
         row[weekMonday] = secs;
@@ -285,7 +302,11 @@ export function buildPivotedRows(entries: CalendarEntry[], weeks: string[], date
     }
     return students.map((studentid) => {
       let totalSeconds = 0;
-      const row: PivotedRow = { studentid, totalSeconds: 0 };
+      const row: PivotedRow = {
+        studentid,
+        full_name: nameMap.get(studentid) ?? studentid,
+        totalSeconds: 0
+      };
       for (const date of dates) {
         const secs = map.get(`${studentid}\t${date}`) ?? 0;
         row[date] = secs;
