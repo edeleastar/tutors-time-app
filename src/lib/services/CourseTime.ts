@@ -1,4 +1,10 @@
-import type { CourseCalendar, LearningRecord, CalendarEntry } from "../types";
+import type {
+  CourseCalendar,
+  LearningRecord,
+  CalendarEntry,
+  CalendarEntryBase,
+  StudentCalendar
+} from "../types";
 import { CalendarModel } from "$lib/components/calendar/CalendarModel";
 import { filterByDateRange } from "$lib/components/calendar/calendarUtils";
 import { LabsModel } from "$lib/components/labs/LabsModel";
@@ -69,6 +75,83 @@ export const CourseTime = {
   },
 
   /**
+   * Load calendar data for a single student within a course and date range.
+   * Does not mutate CourseData; returns a StudentCalendar instance.
+   */
+  async loadStudentCalendar(
+    courseId: string,
+    studentId: string,
+    startDate: string | null,
+    endDate: string | null
+  ): Promise<StudentCalendar> {
+    const id = courseId.trim();
+    const sid = studentId.trim();
+
+    if (!id) throw new Error("Course ID is required");
+    if (!sid) throw new Error("Student ID is required");
+
+    const title = await CourseTime.getCourseTitle(id);
+
+    let result: StudentCalendar;
+
+    try {
+      const rawData = await CourseTime.getCalendarData(id);
+      const filteredByDate = filterByDateRange(rawData, startDate, endDate);
+
+      // All course dates in range (used to keep columns aligned with course-level view)
+      const allDates = Array.from(new Set(filteredByDate.map((e) => e.id))).sort();
+
+      // Actual entries for this student
+      const studentEntries = filteredByDate.filter((entry) => entry.studentid === sid);
+
+      // Pad missing dates for this student with zero-duration entries
+      const displayName =
+        studentEntries[0]?.full_name != null && studentEntries[0].full_name.trim().length > 0
+          ? studentEntries[0].full_name
+          : sid;
+
+      const paddedEntries: CalendarEntry[] = [...studentEntries];
+
+      for (const date of allDates) {
+        const hasEntry = studentEntries.some((entry) => entry.id === date);
+        if (!hasEntry) {
+          paddedEntries.push({
+            id: date,
+            studentid: sid,
+            courseid: id,
+            timeactive: 0,
+            pageloads: 0,
+            full_name: displayName
+          });
+        }
+      }
+
+      result = {
+        id,
+        studentId: sid,
+        title,
+        data: paddedEntries,
+        loading: false,
+        error: null,
+        calendarModel: new CalendarModel(paddedEntries, false, null)
+      };
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : "Failed to load calendar data";
+      result = {
+        id,
+        studentId: sid,
+        title,
+        data: [],
+        loading: false,
+        error: msg,
+        calendarModel: new CalendarModel([], false, msg)
+      };
+    }
+
+    return result;
+  },
+
+  /**
    * Return a display title for a given course ID.
    * Uses tutors-connect-courses.course_record.title when available, otherwise falls back to the ID.
    */
@@ -124,33 +207,44 @@ export const CourseTime = {
       throw new Error(`Failed to fetch calendar data: ${error.message}`);
     }
 
-    const entries: CalendarEntry[] = (data as CalendarEntry[]) ?? [];
+    const rawEntries: CalendarEntryBase[] = (data as CalendarEntryBase[]) ?? [];
 
     // Look up student full names by studentid (github_id in tutors-connect-users)
-    const studentIds = Array.from(new Set(entries.map((e) => e.studentid).filter(Boolean)));
+    const studentIds = Array.from(new Set(rawEntries.map((e) => e.studentid).filter(Boolean)));
     if (!studentIds.length) {
-      return entries;
+      // No users to look up; fall back to using studentid as full_name
+      return rawEntries.map<CalendarEntry>((entry) => ({
+        ...entry,
+        full_name: entry.studentid
+      }));
     }
 
-    const { data: userRows, error: userError } = await supabase.from("tutors-connect-users").select("github_id, full_name").in("github_id", studentIds);
+    const { data: userRows, error: userError } = await supabase
+      .from("tutors-connect-users")
+      .select("github_id, full_name")
+      .in("github_id", studentIds);
 
     if (userError) {
       // If lookup fails, fall back to raw student IDs
-      return entries;
+      return rawEntries.map<CalendarEntry>((entry) => ({
+        ...entry,
+        full_name: entry.studentid
+      }));
     }
 
     const nameMap: Record<string, string> = {};
     for (const row of (userRows ?? []) as TutorsConnectUser[]) {
       const key = row.github_id?.trim();
       if (!key) continue;
-      const displayName = row.full_name && row.full_name.trim().length > 0 ? row.full_name.trim() : key;
+      const displayName =
+        row.full_name && row.full_name.trim().length > 0 ? row.full_name.trim() : key;
       nameMap[key] = displayName;
     }
 
-    // Replace studentid with the full name (or leave as-is if no match)
-    return entries.map((entry) => ({
+    // Attach full_name while preserving raw studentid
+    return rawEntries.map<CalendarEntry>((entry) => ({
       ...entry,
-      studentid: nameMap[entry.studentid] ?? entry.studentid
+      full_name: nameMap[entry.studentid] ?? entry.studentid
     }));
   },
 

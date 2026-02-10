@@ -66,7 +66,9 @@
 <section class="p-2 h-[calc(100vh-4rem)]">
   <div class="card p-4 h-full flex flex-col">
     <div class="flex justify-between items-center mb-4 shrink-0">
-      <h1 class="text-3xl font-bold">Calendar Data</h1>
+      <h1 class="text-3xl font-bold">
+        Calendar Data {#if course} for {course.title}{/if}
+      </h1>
       {#if course}
         <button
           type="button"

@@ -5,7 +5,13 @@ import type { ColDef } from "ag-grid-community";
 export type ViewMode = "week" | "day";
 
 // Shared row types so grids can reuse aggregation helpers.
-export type PivotedRow = { studentid: string; totalSeconds: number; [key: string]: string | number };
+export type PivotedRow = {
+  courseid: string;
+  studentid: string;
+  full_name: string;
+  totalSeconds: number;
+  [key: string]: string | number;
+};
 export type SummaryRow = { courseid: string; totalSeconds: number; [key: string]: string | number };
 
 /** Filter calendar entries by date range (inclusive). */
@@ -159,7 +165,8 @@ export function buildPerDateTimeColumns<T = any>(dates: string[]): ColDef<T>[] {
     field: d as any,
     headerName: formatDateShort(d),
     headerClass: "ag-header-vertical",
-    valueFormatter: (p) => (p.value != null && Number(p.value) > 0 ? formatTimeNearestMinute(Number(p.value)) : ""),
+    valueFormatter: (p) =>
+      p.value != null ? formatTimeNearestMinute(Number(p.value)) : "",
     cellClass: "ag-right-aligned-cell",
     cellStyle: (p) => ({
       backgroundColor: cellColorForMinutes(p.value as number),
@@ -177,7 +184,8 @@ export function buildPerDateTimeColumnsMinutesOnly<T = any>(dates: string[]): Co
     field: d as any,
     headerName: formatDateShort(d),
     headerClass: "ag-header-vertical",
-    valueFormatter: (p) => (p.value != null && Number(p.value) > 0 ? formatTimeMinutesOnly(Number(p.value)) : ""),
+    valueFormatter: (p) =>
+      p.value != null ? formatTimeMinutesOnly(Number(p.value)) : "",
     cellClass: "ag-right-aligned-cell",
     cellStyle: (p) => ({
       backgroundColor: cellColorForMinutes(p.value as number),
@@ -219,7 +227,8 @@ export function buildPerWeekTimeColumns<T = any>(weeks: string[]): ColDef<T>[] {
     field: weekMonday as any,
     headerName: formatDateShort(weekMonday),
     headerClass: "ag-header-vertical",
-    valueFormatter: (p) => (p.value != null && Number(p.value) > 0 ? formatTimeNearestMinute(Number(p.value)) : ""),
+    valueFormatter: (p) =>
+      p.value != null ? formatTimeNearestMinute(Number(p.value)) : "",
     cellClass: "ag-right-aligned-cell",
     cellStyle: (p) => ({
       backgroundColor: cellColorForMinutes(p.value as number),
@@ -237,7 +246,8 @@ export function buildPerWeekTimeColumnsMinutesOnly<T = any>(weeks: string[]): Co
     field: weekMonday as any,
     headerName: formatDateShort(weekMonday),
     headerClass: "ag-header-vertical",
-    valueFormatter: (p) => (p.value != null && Number(p.value) > 0 ? formatTimeMinutesOnly(Number(p.value)) : ""),
+    valueFormatter: (p) =>
+      p.value != null ? formatTimeMinutesOnly(Number(p.value)) : "",
     cellClass: "ag-right-aligned-cell",
     cellStyle: (p) => ({
       backgroundColor: cellColorForMinutes(p.value as number),
@@ -255,6 +265,15 @@ export function buildPerWeekTimeColumnsMinutesOnly<T = any>(weeks: string[]): Co
  */
 export function buildPivotedRows(entries: CalendarEntry[], weeks: string[], dates: string[], viewMode: ViewMode): PivotedRow[] {
   const students = Array.from(new Set(entries.map((e) => e.studentid))).sort();
+  const courseId = entries.length > 0 ? entries[0].courseid : "";
+  const nameMap = new Map<string, string>();
+
+  for (const e of entries) {
+    if (!nameMap.has(e.studentid)) {
+      nameMap.set(e.studentid, e.full_name ?? e.studentid);
+    }
+  }
+
   const map = new Map<string, number>();
 
   if (viewMode === "week") {
@@ -265,7 +284,12 @@ export function buildPivotedRows(entries: CalendarEntry[], weeks: string[], date
     }
     return students.map((studentid) => {
       let totalSeconds = 0;
-      const row: PivotedRow = { studentid, totalSeconds: 0 };
+      const row: PivotedRow = {
+        courseid: courseId,
+        studentid,
+        full_name: nameMap.get(studentid) ?? studentid,
+        totalSeconds: 0
+      };
       for (const weekMonday of weeks) {
         const secs = map.get(`${studentid}\t${weekMonday}`) ?? 0;
         row[weekMonday] = secs;
@@ -281,7 +305,12 @@ export function buildPivotedRows(entries: CalendarEntry[], weeks: string[], date
     }
     return students.map((studentid) => {
       let totalSeconds = 0;
-      const row: PivotedRow = { studentid, totalSeconds: 0 };
+      const row: PivotedRow = {
+        courseid: courseId,
+        studentid,
+        full_name: nameMap.get(studentid) ?? studentid,
+        totalSeconds: 0
+      };
       for (const date of dates) {
         const secs = map.get(`${studentid}\t${date}`) ?? 0;
         row[date] = secs;
