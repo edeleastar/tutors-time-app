@@ -57,4 +57,17 @@ export type CourseCalendar = {
   labsModel: LabsModel;
 };
 
+// Single-student calendar view for a given course
+export type StudentCalendar = {
+  id: string; // course ID
+  studentId: string; // student identifier (matches CalendarEntry.studentid after enrichment)
+  title: string; // course display title
+  data: CalendarEntry[];
+  loading: boolean;
+  error: string | null;
+  /** Prepared views for the calendar grid. */
+  calendarModel: CalendarModel;
+};
+
+
 
