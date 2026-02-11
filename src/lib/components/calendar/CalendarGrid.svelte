@@ -14,9 +14,13 @@
     model: CalendarModel;
     mode: Mode;
     variant?: Variant;
+    /** When true, append the median row to the grid (student view: show student + course median in same grid). */
+    includeMedianRow?: boolean;
+    /** When set with includeMedianRow, filter rows to only this student (so median is course-level, not single-student). */
+    studentId?: string | null;
   }
 
-  let { model, mode, variant = "detail" }: Props = $props();
+  let { model, mode, variant = "detail", includeMedianRow = false, studentId = null }: Props = $props();
 
   const isSummary = $derived(variant === "summary");
 
@@ -36,9 +40,21 @@
           const row = mode === "day" ? model.medianByDay.row : model.medianByWeek.row;
           return row ? [row] : [];
         })()
-      : mode === "day"
-        ? model.day.rows
-        : model.week.rows
+      : (() => {
+          let rows = mode === "day" ? model.day.rows : model.week.rows;
+          if (studentId != null && studentId !== "") {
+            rows = rows.filter((r) => (r as CalendarRow).studentid === studentId);
+          }
+          if (!includeMedianRow || mode !== "week") return rows;
+          const medianRow = model.medianByWeek.row;
+          if (!medianRow) return rows;
+          const combined: CalendarRow = {
+            ...medianRow,
+            studentid: "",
+            full_name: "Course median"
+          };
+          return [...rows, combined];
+        })()
   );
 
   const hasData = $derived(

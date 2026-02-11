@@ -144,7 +144,7 @@ export const CourseTime = {
         data: paddedEntries,
         loading: false,
         error: null,
-        calendarModel: new CalendarModel(paddedEntries, false, null),
+        calendarModel: new CalendarModel(filteredByDate, false, null),
         labsModel: new LabsModel(learningRecords, false, learningRecordsError)
       };
     } catch (e) {
