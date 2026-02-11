@@ -241,29 +241,25 @@ export function buildMedianByDay(
   return row;
 }
 
-/** Build median row for lab-by-week view: sum of step medians per lab. Takes medianByStep row and aggregates by lab. */
+/** Build median row for lab-by-week view: median of all values for each lab across all students in the lab LabsTable. */
 export function buildMedianByLab(
-  medianByStepRow: LabMedianRow | null,
+  records: LearningRecord[],
   courseid: string,
-  labs: string[],
-  steps: string[]
+  labs: string[]
 ): LabMedianRow | null {
-  if (!medianByStepRow) return null;
+  const validRecords = records.filter((r) => r.lo_id != null);
+  if (!validRecords.length || !labs.length) return null;
 
+  const labRows = buildLabsPivotedRows(validRecords, "lab");
   const row: LabMedianRow = { courseid, totalMinutes: 0 };
 
   for (const labId of labs) {
-    let sum = 0;
-    for (const stepId of steps) {
-      if (extractLabIdentifier(stepId) === labId) {
-        sum += (medianByStepRow[stepId] as number) ?? 0;
-      }
-    }
-    row[labId] = sum;
+    const values = labRows.map((r) => (r[labId] as number) ?? 0).filter((v) => v > 0);
+    row[labId] = median(values);
   }
 
-  const labSums = labs.map((labId) => (row[labId] as number) ?? 0).filter((v) => v > 0);
-  row.totalMinutes = median(labSums);
+  const studentTotals = labRows.map((r) => r.totalMinutes);
+  row.totalMinutes = median(studentTotals);
 
   return row;
 }

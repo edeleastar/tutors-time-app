@@ -34,7 +34,9 @@
       defaultColDef: { sortable: true, resizable: true },
       domLayout: "normal",
       suppressNoRowsOverlay: false,
-      headerHeight: 72
+      headerHeight: 72,
+      enableCellTextSelection: true,
+      ensureDomOrder: true
     });
     gridApi = api;
     return () => {

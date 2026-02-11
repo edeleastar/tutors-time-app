@@ -126,10 +126,8 @@ export class LabsModel {
 
   private buildMedianByWeekView(records: LearningRecord[]): LabsMedianTable {
     const labs = getDistinctLabs(records);
-    const steps = getDistinctLabSteps(records);
     const courseid = records.length > 0 ? records[0].course_id : "";
-    const medianByStepRow = this.medianByDay.row;
-    const row = buildMedianByLab(medianByStepRow, courseid, labs, steps);
+    const row = buildMedianByLab(records, courseid, labs);
     const labColumns = buildLabColumns<LabMedianRow>(labs, "lab");
     const columnDefs: ColDef<LabMedianRow>[] = [
       buildTotalMinutesColumn<LabMedianRow>("totalMinutes", "Total"),
