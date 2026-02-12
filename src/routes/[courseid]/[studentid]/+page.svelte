@@ -1,7 +1,7 @@
 <script lang="ts">
   import CalendarGrid from "$lib/components/calendar/CalendarGrid.svelte";
   import LabsGrid from "$lib/components/labs/LabsGrid.svelte";
-  import { CourseTime } from "$lib/services/CourseTime";
+  import { CourseTimeService } from "$lib/services/CourseTimeService";
   import type { StudentCalendar } from "$lib/types";
   import { onMount } from "svelte";
   import { page } from "$app/stores";
@@ -30,8 +30,7 @@
     }
 
     try {
-      const courseTime = new CourseTime();
-      const result = await courseTime.loadStudentCalendar(courseId, studentId, null, null);
+      const result = await CourseTimeService.loadStudentCalendar(courseId, studentId, null, null);
       studentCalendar = result;
       error = result.error;
     } catch (e) {

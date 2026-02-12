@@ -1,4 +1,5 @@
 import { CourseTime } from "./CourseTime";
+import type { StudentCalendar } from "../types";
 
 const courseMap = new Map<string, CourseTime>();
 
@@ -35,5 +36,28 @@ export const CourseTimeService = {
     }
 
     return courseTime;
+  },
+
+  /**
+   * Load calendar data for a single student within a course and date range.
+   * Returns a StudentCalendar instance with calendar and lab data for the student.
+   */
+  async loadStudentCalendar(
+    courseId: string,
+    studentId: string,
+    startDate?: string | null,
+    endDate?: string | null
+  ): Promise<StudentCalendar> {
+    const trimmedCourseId = courseId.trim();
+    const trimmedStudentId = studentId.trim();
+
+    if (!trimmedCourseId) throw new Error("Course ID is required");
+    if (!trimmedStudentId) throw new Error("Student ID is required");
+
+    const normalizedStart = startDate && startDate.trim() ? startDate.trim() : null;
+    const normalizedEnd = endDate && endDate.trim() ? endDate.trim() : null;
+
+    const courseTime = new CourseTime();
+    return await courseTime.loadStudentCalendar(trimmedCourseId, trimmedStudentId, normalizedStart, normalizedEnd);
   }
 };
