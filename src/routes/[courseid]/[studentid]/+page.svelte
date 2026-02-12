@@ -3,6 +3,8 @@
   import LabsGrid from "$lib/components/labs/LabsGrid.svelte";
   import { CourseTimeService } from "$lib/services/CourseTimeService";
   import type { StudentCalendar } from "$lib/types";
+  import type { CalendarRow, CalendarMedianRow } from "$lib/components/calendar/calendarUtils";
+  import { formatDateShort, formatTimeMinutesOnly, getDistinctSortedWeeks, cellColorForMinutes } from "$lib/components/calendar/calendarUtils";
   import { onMount } from "svelte";
   import { page } from "$app/stores";
 
@@ -15,6 +17,33 @@
       ? studentCalendar.data[0].full_name || studentCalendar.studentId
       : studentCalendar?.studentId ?? ""
   );
+
+  // Get student row from week data
+  const studentRow = $derived.by<CalendarRow | null>(() => {
+    const calendar = studentCalendar;
+    if (!calendar?.calendarModel?.week?.rows || !calendar.studentId) return null;
+    const studentId = calendar.studentId;
+    return calendar.calendarModel.week.rows.find(
+      (r) => r.studentid === studentId
+    ) ?? null;
+  });
+
+  // Get course median row
+  const medianRow = $derived(studentCalendar?.calendarModel.medianByWeek.row ?? null);
+
+  // Get week columns (week Monday dates)
+  const weeks = $derived.by(() => {
+    if (!studentCalendar?.data) return [];
+    return getDistinctSortedWeeks(studentCalendar.data);
+  });
+
+  // Format time from seconds as minutes only
+  function formatTime(seconds: number | undefined): string {
+    if (seconds == null || seconds === 0) return "—";
+    const minutes = Math.round(seconds / 60);
+    return `${minutes}`;
+  }
+
 
   onMount(async () => {
     const rawCourseId: string | undefined = $page.params.courseid as string | undefined;
@@ -65,13 +94,74 @@
           </p>
         </div>
       {:else if studentCalendar}
-        <div class="flex flex-col gap-4 flex-1 min-h-0 overflow-hidden">
-          <section class="flex-1 min-h-0 flex flex-col">
-            <div class="flex-1 min-h-0">
-              <CalendarGrid model={studentCalendar.calendarModel} mode="week" includeMedianRow studentId={studentCalendar.studentId} />
-            </div>
-          </section>
+        <div class="flex flex-col gap-6 flex-1 min-h-0 overflow-auto">
+          <!-- Calendar Table -->
+          {#if studentCalendar.calendarModel.hasData && studentRow}
+            <section class="card p-6">
+              <h2 class="text-2xl font-semibold mb-4">Calendar Activity by Week</h2>
+              <div class="overflow-x-auto">
+                <table class="w-full border-collapse">
+                  <thead>
+                    <tr class="border-b-2 border-surface-300">
+                      <th class="text-left py-3 px-4 font-semibold">Name</th>
+                      <th class="text-left py-3 px-4 font-semibold">Github</th>
+                      {#each weeks as week}
+                        <th class="text-center py-3 px-2 font-semibold min-w-[60px]">
+                          <div class="writing-vertical-rl">
+                            {formatDateShort(week)}
+                          </div>
+                        </th>
+                      {/each}
+                      <th class="text-right py-3 px-4 font-semibold">Total</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <!-- Student Row -->
+                    <tr class="border-b border-surface-200 hover:bg-surface-50">
+                      <td class="py-3 px-4">
+                        <a href="/{studentCalendar.id}/{studentCalendar.studentId}" class="underline text-primary-600">
+                          {studentRow.full_name}
+                        </a>
+                      </td>
+                      <td class="py-3 px-4">
+                        <a href="https://github.com/{studentRow.studentid}" target="_blank" rel="noopener noreferrer" class="underline text-primary-600">
+                          {studentRow.studentid}
+                        </a>
+                      </td>
+                      {#each weeks as week}
+                        {@const weekSeconds = studentRow[week] as number | undefined}
+                        {@const weekBlocks = weekSeconds != null ? Math.round(weekSeconds / 30) : 0}
+                        <td class="py-3 px-2 text-center font-mono text-sm" style="background-color: {cellColorForMinutes(weekBlocks)}">
+                          {formatTime(weekSeconds)}
+                        </td>
+                      {/each}
+                      <td class="py-3 px-4 text-right font-mono font-semibold" style="background-color: {cellColorForMinutes(studentRow.totalSeconds != null ? Math.round(studentRow.totalSeconds / 30) : 0)}">
+                        {formatTime(studentRow.totalSeconds)}
+                      </td>
+                    </tr>
+                    <!-- Median Row -->
+                    {#if medianRow}
+                      <tr class="border-b-2 border-surface-300 bg-surface-100">
+                        <td class="py-3 px-4 font-semibold" colspan="2">Course Median</td>
+                        {#each weeks as week}
+                          {@const weekSeconds = medianRow[week] as number | undefined}
+                          {@const weekBlocks = weekSeconds != null ? Math.round(weekSeconds / 30) : 0}
+                          <td class="py-3 px-2 text-center font-mono text-sm" style="background-color: {cellColorForMinutes(weekBlocks)}">
+                            {formatTime(weekSeconds)}
+                          </td>
+                        {/each}
+                        <td class="py-3 px-4 text-right font-mono font-semibold" style="background-color: {cellColorForMinutes(medianRow.totalSeconds != null ? Math.round(medianRow.totalSeconds / 30) : 0)}">
+                          {formatTime(medianRow.totalSeconds)}
+                        </td>
+                      </tr>
+                    {/if}
+                  </tbody>
+                </table>
+              </div>
+            </section>
+          {/if}
 
+          <!-- Labs Grid -->
           <section class="flex-1 min-h-0 flex flex-col">
             <div class="flex-1 min-h-0">
               <LabsGrid model={studentCalendar.labsModel} mode="lab" studentId={studentDisplayName} includeMedianRow />
