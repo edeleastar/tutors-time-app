@@ -1,18 +1,37 @@
 <script lang="ts">
-  import type { CalendarEntry } from '$lib/types';
+  import { CourseTime } from "$lib/services/CourseTime";
+  import type { CourseCalendar } from "$lib/types";
+  import { onMount } from "svelte";
 
-  interface Props {
-    data: CalendarEntry[];
-    loading: boolean;
-    error: string | null;
-  }
+  let { courseId }: { courseId: string } = $props();
 
-  let { data, loading, error }: Props = $props();
+  let course = $state<CourseCalendar | null>(null);
+  let loading = $state(true);
+  let error = $state<string | null>(null);
+
+  onMount(async () => {
+    const id = courseId.trim();
+    if (!id) {
+      error = "Course ID is required.";
+      loading = false;
+      return;
+    }
+    try {
+      course = await CourseTime.loadCalendar(id, null, null);
+      error = course.error;
+    } catch (e) {
+      error = e instanceof Error ? e.message : "Failed to load calendar data";
+    } finally {
+      loading = false;
+    }
+  });
+
+  const data = $derived(course?.data ?? []);
 
   function formatDate(dateString: string): string {
     try {
       const date = new Date(dateString);
-      return date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+      return date.toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" });
     } catch {
       return dateString;
     }
@@ -65,6 +84,6 @@
     </table>
   </div>
   <p class="mt-4 text-sm text-surface-600">
-    Showing {data.length} calendar {data.length === 1 ? 'entry' : 'entries'}
+    Showing {data.length} calendar {data.length === 1 ? "entry" : "entries"}
   </p>
 {/if}

@@ -1,5 +1,5 @@
 <script lang="ts">
-  import CourseIdDialog from "$lib/ui/CourseIdDialog.svelte";
+  import CourseIdDialog from "$lib/components/CourseIdDialog.svelte";
   import { CourseTime } from "$lib/services/CourseTime";
   import { goto } from "$app/navigation";
 

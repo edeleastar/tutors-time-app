@@ -1,5 +1,5 @@
 <script lang="ts">
-  import LearningRecordsTable from "$lib/ui/LearningRecordsTable.svelte";
+  import LearningRecordsTable from "$lib/components/tables/LearningRecordsTable.svelte";
   import { page } from "$app/stores";
 
   const courseId = $derived(($page.params.courseid as string) ?? "");
