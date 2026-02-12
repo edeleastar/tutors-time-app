@@ -1,20 +1,42 @@
 <script lang="ts">
-  import type { LearningRecord } from '$lib/types';
+  import { CourseTime } from "$lib/services/CourseTime";
+  import type { CourseCalendar } from "$lib/types";
+  import { onMount } from "svelte";
 
-  interface Props {
-    data: LearningRecord[];
-    loading: boolean;
-    error: string | null;
-  }
+  let { courseId }: { courseId: string } = $props();
 
-  let { data, loading, error }: Props = $props();
+  let course = $state<CourseCalendar | null>(null);
+  let loading = $state(true);
+  let error = $state<string | null>(null);
+
+  onMount(async () => {
+    const id = courseId.trim();
+    if (!id) {
+      error = "Course ID is required.";
+      loading = false;
+      return;
+    }
+    try {
+      course = await CourseTime.loadCalendar(id, null, null);
+      error = course.learningRecordsError;
+    } catch (e) {
+      error = e instanceof Error ? e.message : "Failed to load learning records";
+    } finally {
+      loading = false;
+    }
+  });
+
+  const data = $derived(course?.learningRecords ?? []);
 
   function formatDate(dateString: string | null): string {
-    if (!dateString) return 'N/A';
+    if (!dateString) return "N/A";
     try {
       const date = new Date(dateString);
-      return date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }) +
-        ' ' + date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+      return (
+        date.toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" }) +
+        " " +
+        date.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" })
+      );
     } catch {
       return dateString;
     }
@@ -22,7 +44,7 @@
 
   // duration is stored as a count of 30-second blocks; convert to minutes for display
   function formatDuration(blocks: number | null): string {
-    if (blocks === null) return 'N/A';
+    if (blocks === null) return "N/A";
     const minutes = Math.round((blocks * 30) / 60); // 30-second blocks -> minutes
     return `${minutes}`;
   }
@@ -56,13 +78,13 @@
         </tr>
       </thead>
       <tbody>
-        {#each data as record (record.course_id + record.student_id + (record.lo_id || '') + (record.type || ''))}
+        {#each data as record (record.course_id + record.student_id + (record.lo_id || "") + (record.type || ""))}
           <tr>
             <td>{record.student_id}</td>
-            <td>{record.lo_id || 'N/A'}</td>
-            <td>{record.type || 'N/A'}</td>
+            <td>{record.lo_id || "N/A"}</td>
+            <td>{record.type || "N/A"}</td>
             <td class="text-right">{formatDuration(record.duration)}</td>
-            <td class="text-right">{record.count ?? 'N/A'}</td>
+            <td class="text-right">{record.count ?? "N/A"}</td>
             <td>{formatDate(record.date_last_accessed)}</td>
           </tr>
         {/each}
@@ -70,6 +92,6 @@
     </table>
   </div>
   <p class="mt-4 text-sm text-surface-600">
-    Showing {data.length} learning {data.length === 1 ? 'record' : 'records'}
+    Showing {data.length} learning {data.length === 1 ? "record" : "records"}
   </p>
 {/if}

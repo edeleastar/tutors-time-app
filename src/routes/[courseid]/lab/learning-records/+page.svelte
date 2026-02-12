@@ -1,5 +1,5 @@
 <script lang="ts">
-  import LearningRecordsView from "$lib/ui/LearningRecordsView.svelte";
+  import LearningRecordsTable from "$lib/ui/LearningRecordsTable.svelte";
   import { page } from "$app/stores";
 
   const courseId = $derived(($page.params.courseid as string) ?? "");
@@ -14,7 +14,7 @@
   <section class="p-2 h-[calc(100vh-4rem)]">
     <div class="card p-4 h-full flex flex-col">
       <div class="flex flex-col flex-1 min-h-0 overflow-auto">
-        <LearningRecordsView courseId={courseId} />
+        <LearningRecordsTable courseId={courseId} />
       </div>
     </div>
   </section>
