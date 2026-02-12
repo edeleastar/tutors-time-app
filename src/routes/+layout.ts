@@ -15,6 +15,7 @@ function getViewType(pathname: string): string {
     }
     if (segments[2] === "byday") return "Calendar by day";
     if (segments[2] === "byweek") return "Calendar by week";
+    if (segments[2] === "raw") return "Raw Calendar";
     if (segments.length >= 2) return "Calendar";
   }
   if (segments[1] === "lab") {
@@ -24,6 +25,7 @@ function getViewType(pathname: string): string {
     }
     if (segments[2] === "bystep") return "Lab by step";
     if (segments[2] === "bylab") return "Lab by lab";
+    if (segments[2] === "learning-records") return "Learning Records";
     if (segments.length >= 2) return "Lab";
   }
   return "";

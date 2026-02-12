@@ -31,6 +31,11 @@
       icon: "streamline-ultimate-color:analytics-bars-3d"
     },
     {
+      label: "Raw Calendar",
+      href: `${calendarPath}/raw`,
+      icon: "streamline-ultimate-color:office-file-xls"
+    },
+    {
       label: "Labs by Lab",
       href: `${labPath}/bylab`,
       icon: "streamline-ultimate-color:book-open-bookmark"
@@ -49,6 +54,11 @@
       label: "Median Lab by Step",
       href: `${labPath}/median/bystep`,
       icon: "streamline-ultimate-color:analytics-bars-3d"
+    },
+    {
+      label: "Learning Records",
+      href: `${labPath}/learning-records`,
+      icon: "streamline-ultimate-color:notes-book-text"
     }
   ]);
 </script>
