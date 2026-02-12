@@ -1,10 +1,11 @@
 <script lang="ts">
   import CalendarGrid from "$lib/components/calendar/CalendarGrid.svelte";
-  import LabsGrid from "$lib/components/labs/LabsGrid.svelte";
   import { CourseTimeService } from "$lib/services/CourseTimeService";
   import type { StudentCalendar } from "$lib/types";
   import type { CalendarRow, CalendarMedianRow } from "$lib/components/calendar/calendarUtils";
+  import type { LabRow, LabMedianRow } from "$lib/components/labs/labUtils";
   import { formatDateShort, formatTimeMinutesOnly, getDistinctSortedWeeks, cellColorForMinutes } from "$lib/components/calendar/calendarUtils";
+  import { extractLabIdentifier } from "$lib/components/labs/labUtils";
   import { onMount } from "svelte";
   import { page } from "$app/stores";
 
@@ -43,6 +44,33 @@
     const minutes = Math.round(seconds / 60);
     return `${minutes}`;
   }
+
+  // Format lab time from 30-second blocks as minutes only
+  function formatLabTime(blocks: number | undefined): string {
+    if (blocks == null || blocks === 0) return "—";
+    return formatTimeMinutesOnly(blocks);
+  }
+
+  // Get student lab row (filter by display name since learning records use full_name)
+  const studentLabRow = $derived.by<LabRow | null>(() => {
+    const calendar = studentCalendar;
+    if (!calendar?.labsModel?.lab?.rows) return null;
+    const displayName = studentDisplayName;
+    return calendar.labsModel.lab.rows.find(
+      (r) => r.studentid === displayName
+    ) ?? null;
+  });
+
+  // Get course median lab row
+  const labMedianRow = $derived(studentCalendar?.labsModel?.medianByLab?.row ?? null);
+
+  // Get lab column IDs (extract from columnDefs, excluding studentid and totalMinutes)
+  const labColumns = $derived.by(() => {
+    if (!studentCalendar?.labsModel?.lab?.columnDefs) return [];
+    return studentCalendar.labsModel.lab.columnDefs
+      .map((col) => col.field as string)
+      .filter((field) => field !== "studentid" && field !== "totalMinutes");
+  });
 
 
   onMount(async () => {
@@ -104,9 +132,8 @@
                   <thead>
                     <tr class="border-b-2 border-surface-300">
                       <th class="text-left py-4 px-4 font-semibold">Name</th>
-                      <th class="text-left py-4 px-4 font-semibold">Github</th>
                       {#each weeks as week}
-                        <th class="text-center py-4 px-1 font-semibold min-w-[28px] align-middle" style="height: 120px;">
+                        <th class="text-center py-4 px-1 font-semibold min-w-[28px] align-middle" style="height: 140px;">
                           <div class="transform -rotate-90 whitespace-nowrap text-xs" style="height: 100%; display: flex; align-items: center; justify-content: center;">
                             {formatDateShort(week)}
                           </div>
@@ -123,11 +150,6 @@
                           {studentRow.full_name}
                         </a>
                       </td>
-                      <td class="py-3 px-4">
-                        <a href="https://github.com/{studentRow.studentid}" target="_blank" rel="noopener noreferrer" class="underline text-primary-600">
-                          {studentRow.studentid}
-                        </a>
-                      </td>
                       {#each weeks as week}
                         {@const weekSeconds = studentRow[week] as number | undefined}
                         {@const weekBlocks = weekSeconds != null ? Math.round(weekSeconds / 30) : 0}
@@ -142,7 +164,7 @@
                     <!-- Median Row -->
                     {#if medianRow}
                       <tr class="border-b-2 border-surface-300 bg-surface-100">
-                        <td class="py-3 px-4 font-semibold" colspan="2">Course Median</td>
+                        <td class="py-3 px-4 font-semibold">Course Median</td>
                         {#each weeks as week}
                           {@const weekSeconds = medianRow[week] as number | undefined}
                           {@const weekBlocks = weekSeconds != null ? Math.round(weekSeconds / 30) : 0}
@@ -161,12 +183,63 @@
             </section>
           {/if}
 
-          <!-- Labs Grid -->
-          <section class="flex-1 min-h-0 flex flex-col">
-            <div class="flex-1 min-h-0">
-              <LabsGrid model={studentCalendar.labsModel} mode="lab" studentId={studentDisplayName} includeMedianRow />
-            </div>
-          </section>
+          <!-- Labs Table -->
+          {#if studentCalendar.labsModel.hasData && studentLabRow}
+            <section class="card p-6">
+              <h2 class="text-2xl font-semibold mb-4">Lab Activity by Lab</h2>
+              <div class="overflow-x-auto">
+                <table class="w-full border-collapse">
+                  <thead>
+                    <tr class="border-b-2 border-surface-300">
+                      <th class="text-left py-4 px-4 font-semibold">Student ID</th>
+                      {#each labColumns as labId}
+                        <th class="text-center py-4 px-1 font-semibold align-middle" style="width: 28px; height: 140px;">
+                          <div class="transform -rotate-90 whitespace-nowrap text-xs" style="height: 100%; display: flex; align-items: center; justify-content: center;">
+                            {extractLabIdentifier(labId)}
+                          </div>
+                        </th>
+                      {/each}
+                      <th class="text-right py-4 px-4 font-semibold">Total</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <!-- Student Row -->
+                    <tr class="border-b border-surface-200 hover:bg-surface-50">
+                      <td class="py-3 px-4">
+                        <a href="https://github.com/{studentCalendar.studentId}" target="_blank" rel="noopener noreferrer" class="underline text-primary-600">
+                          {studentLabRow.studentid}
+                        </a>
+                      </td>
+                      {#each labColumns as labId}
+                        {@const labBlocks = studentLabRow[labId] as number | undefined}
+                        <td class="py-3 px-1 text-center font-mono text-xs" style="width: 28px; background-color: {cellColorForMinutes(labBlocks ?? 0)}">
+                          {formatLabTime(labBlocks)}
+                        </td>
+                      {/each}
+                      <td class="py-3 px-4 text-right font-mono font-semibold" style="background-color: {cellColorForMinutes(studentLabRow.totalMinutes ?? 0)}">
+                        {formatLabTime(studentLabRow.totalMinutes)}
+                      </td>
+                    </tr>
+                    <!-- Median Row -->
+                    {#if labMedianRow}
+                      <tr class="border-b-2 border-surface-300 bg-surface-100">
+                        <td class="py-3 px-4 font-semibold">Course Median</td>
+                        {#each labColumns as labId}
+                          {@const labBlocks = labMedianRow[labId] as number | undefined}
+                          <td class="py-3 px-1 text-center font-mono text-xs" style="width: 28px; background-color: {cellColorForMinutes(labBlocks ?? 0)}">
+                            {formatLabTime(labBlocks)}
+                          </td>
+                        {/each}
+                        <td class="py-3 px-4 text-right font-mono font-semibold" style="background-color: {cellColorForMinutes(labMedianRow.totalMinutes ?? 0)}">
+                          {formatLabTime(labMedianRow.totalMinutes)}
+                        </td>
+                      </tr>
+                    {/if}
+                  </tbody>
+                </table>
+              </div>
+            </section>
+          {/if}
         </div>
       {/if}
     </div>
