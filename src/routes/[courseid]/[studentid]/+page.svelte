@@ -128,12 +128,12 @@
             <section class="card p-6">
               <h2 class="text-2xl font-semibold mb-4">Calendar Activity by Week</h2>
               <div class="overflow-x-auto">
-                <table class="w-full border-collapse">
+                <table class="w-full border-collapse" style="table-layout: fixed;">
                   <thead>
                     <tr class="border-b-2 border-surface-300">
-                      <th class="text-left py-4 px-4 font-semibold">Name</th>
+                      <th class="text-left py-4 px-4 font-semibold" style="width: 160px;">Name</th>
                       {#each weeks as week}
-                        <th class="text-center py-4 px-1 font-semibold min-w-[28px] align-middle" style="height: 140px;">
+                        <th class="text-center py-4 px-1 font-semibold align-middle" style="width: 36px; min-width: 36px; max-width: 36px; height: 140px; overflow: hidden;">
                           <div class="transform -rotate-90 whitespace-nowrap text-xs" style="height: 100%; display: flex; align-items: center; justify-content: center;">
                             {formatDateShort(week)}
                           </div>
@@ -145,7 +145,7 @@
                   <tbody>
                     <!-- Student Row -->
                     <tr class="border-b border-surface-200 hover:bg-surface-50">
-                      <td class="py-3 px-4">
+                      <td class="py-3 px-4" style="width: 160px;">
                         <a href="/{studentCalendar.id}/{studentCalendar.studentId}" class="underline text-primary-600">
                           {studentRow.full_name}
                         </a>
@@ -153,7 +153,7 @@
                       {#each weeks as week}
                         {@const weekSeconds = studentRow[week] as number | undefined}
                         {@const weekBlocks = weekSeconds != null ? Math.round(weekSeconds / 30) : 0}
-                        <td class="py-3 px-1 text-center font-mono text-xs" style="background-color: {cellColorForMinutes(weekBlocks)}">
+                        <td class="py-3 px-1 text-center font-mono text-xs" style="width: 36px; min-width: 36px; max-width: 36px; background-color: {cellColorForMinutes(weekBlocks)}">
                           {formatTime(weekSeconds)}
                         </td>
                       {/each}
@@ -164,11 +164,11 @@
                     <!-- Median Row -->
                     {#if medianRow}
                       <tr class="border-b-2 border-surface-300 bg-surface-100">
-                        <td class="py-3 px-4 font-semibold">Course Median</td>
+                        <td class="py-3 px-4 font-semibold" style="width: 160px;">Course Median</td>
                         {#each weeks as week}
                           {@const weekSeconds = medianRow[week] as number | undefined}
                           {@const weekBlocks = weekSeconds != null ? Math.round(weekSeconds / 30) : 0}
-                          <td class="py-3 px-1 text-center font-mono text-xs" style="background-color: {cellColorForMinutes(weekBlocks)}">
+                          <td class="py-3 px-1 text-center font-mono text-xs" style="width: 36px; min-width: 36px; max-width: 36px; background-color: {cellColorForMinutes(weekBlocks)}">
                             {formatTime(weekSeconds)}
                           </td>
                         {/each}
@@ -188,12 +188,12 @@
             <section class="card p-6">
               <h2 class="text-2xl font-semibold mb-4">Lab Activity by Lab</h2>
               <div class="overflow-x-auto">
-                <table class="w-full border-collapse">
+                <table class="w-full border-collapse" style="table-layout: fixed;">
                   <thead>
                     <tr class="border-b-2 border-surface-300">
-                      <th class="text-left py-4 px-4 font-semibold">Student ID</th>
+                      <th class="text-left py-4 px-4 font-semibold" style="width: 160px;">Student ID</th>
                       {#each labColumns as labId}
-                        <th class="text-center py-4 px-1 font-semibold align-middle" style="width: 28px; height: 140px;">
+                        <th class="text-center py-4 px-1 font-semibold align-middle" style="width: 36px; min-width: 36px; max-width: 36px; height: 140px; overflow: hidden;">
                           <div class="transform -rotate-90 whitespace-nowrap text-xs" style="height: 100%; display: flex; align-items: center; justify-content: center;">
                             {extractLabIdentifier(labId)}
                           </div>
@@ -205,14 +205,14 @@
                   <tbody>
                     <!-- Student Row -->
                     <tr class="border-b border-surface-200 hover:bg-surface-50">
-                      <td class="py-3 px-4">
+                      <td class="py-3 px-4" style="width: 160px;">
                         <a href="https://github.com/{studentCalendar.studentId}" target="_blank" rel="noopener noreferrer" class="underline text-primary-600">
                           {studentLabRow.studentid}
                         </a>
                       </td>
                       {#each labColumns as labId}
                         {@const labBlocks = studentLabRow[labId] as number | undefined}
-                        <td class="py-3 px-1 text-center font-mono text-xs" style="width: 28px; background-color: {cellColorForMinutes(labBlocks ?? 0)}">
+                        <td class="py-3 px-1 text-center font-mono text-xs" style="width: 36px; min-width: 36px; max-width: 36px; background-color: {cellColorForMinutes(labBlocks ?? 0)}">
                           {formatLabTime(labBlocks)}
                         </td>
                       {/each}
@@ -223,10 +223,10 @@
                     <!-- Median Row -->
                     {#if labMedianRow}
                       <tr class="border-b-2 border-surface-300 bg-surface-100">
-                        <td class="py-3 px-4 font-semibold">Course Median</td>
+                        <td class="py-3 px-4 font-semibold" style="width: 160px;">Course Median</td>
                         {#each labColumns as labId}
                           {@const labBlocks = labMedianRow[labId] as number | undefined}
-                          <td class="py-3 px-1 text-center font-mono text-xs" style="width: 28px; background-color: {cellColorForMinutes(labBlocks ?? 0)}">
+                          <td class="py-3 px-1 text-center font-mono text-xs" style="width: 36px; min-width: 36px; max-width: 36px; background-color: {cellColorForMinutes(labBlocks ?? 0)}">
                             {formatLabTime(labBlocks)}
                           </td>
                         {/each}
