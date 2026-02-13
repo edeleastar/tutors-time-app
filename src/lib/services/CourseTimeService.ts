@@ -66,6 +66,9 @@ export const CourseTimeService = {
         calendarByWeek: null,
         weeks: [],
         courseMedianByWeek: null,
+        calendarByDay: null,
+        dates: [],
+        courseMedianByDay: null,
         labsByLab: null,
         labColumns: [],
         labsMedianByLab: null,
@@ -77,11 +80,17 @@ export const CourseTimeService = {
     const calModel = course.calendarModel;
     const labsModel = course.labsModel;
 
-    const studentCalRow = calModel.week.rows.find((r) => r.studentid === trimmedStudentId) ?? null;
-    const studentName = studentCalRow?.full_name ?? trimmedStudentId;
+    const studentCalRowWeek = calModel.week.rows.find((r) => r.studentid === trimmedStudentId) ?? null;
+    const studentCalRowDay = calModel.day.rows.find((r) => r.studentid === trimmedStudentId) ?? null;
+    const studentName = studentCalRowWeek?.full_name ?? trimmedStudentId;
 
     const weeks =
       calModel.week.columnDefs
+        ?.map((c) => c.field as string)
+        .filter((f) => f && f !== "full_name" && f !== "studentid" && f !== "totalSeconds") ?? [];
+
+    const dates =
+      calModel.day.columnDefs
         ?.map((c) => c.field as string)
         .filter((f) => f && f !== "full_name" && f !== "studentid" && f !== "totalSeconds") ?? [];
 
@@ -95,7 +104,7 @@ export const CourseTimeService = {
         ?.map((c) => c.field as string)
         .filter((f) => f && f !== "studentid" && f !== "full_name" && f !== "totalMinutes") ?? [];
 
-    const hasCalData = studentCalRow != null && calModel.hasData;
+    const hasCalData = (studentCalRowWeek != null || studentCalRowDay != null) && calModel.hasData;
     const hasLabData = studentLabRow != null && labsModel.hasData;
 
     return {
@@ -103,9 +112,12 @@ export const CourseTimeService = {
       courseTitle: course.title,
       studentid: trimmedStudentId,
       studentName,
-      calendarByWeek: studentCalRow,
+      calendarByWeek: studentCalRowWeek,
       weeks,
       courseMedianByWeek: calModel.medianByWeek.row ?? null,
+      calendarByDay: studentCalRowDay,
+      dates,
+      courseMedianByDay: calModel.medianByDay.row ?? null,
       labsByLab: studentLabRow,
       labColumns,
       labsMedianByLab: labsModel.medianByLab.row ?? null,

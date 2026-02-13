@@ -77,6 +77,12 @@ export type StudentCalendar = {
   weeks: string[];
   /** Course median row (by week) */
   courseMedianByWeek: CalendarMedianRow | null;
+  /** Student's calendar row (by day view) */
+  calendarByDay: CalendarRow | null;
+  /** Date column field names for calendar-by-day display */
+  dates: string[];
+  /** Course median row (by day) */
+  courseMedianByDay: CalendarMedianRow | null;
   /** Student's lab row (by lab view) */
   labsByLab: LabRow | null;
   /** Lab column field names for display */
