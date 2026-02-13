@@ -32,10 +32,11 @@ export interface TutorsConnectUser {
   date_last_accessed: string | null; // timestamptz (ISO string)
 }
 
-// Supabase `learning_records` table model
+// Supabase `learning_records` table model (full_name added during enrichment)
 export interface LearningRecord {
   course_id: string; // text not null
-  student_id: string; // text not null
+  student_id: string; // text not null (github_id, used for links)
+  full_name?: string; // added during enrichment from tutors-connect-users
   lo_id: string | null; // text null
   duration: number | null; // bigint null
   count: number | null; // bigint null

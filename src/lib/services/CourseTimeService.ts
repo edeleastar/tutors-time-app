@@ -86,14 +86,14 @@ export const CourseTimeService = {
         .filter((f) => f && f !== "full_name" && f !== "studentid" && f !== "totalSeconds") ?? [];
 
     const studentLabRow =
-      labsModel.lab.rows.find((r) => r.studentid === studentName) ??
       labsModel.lab.rows.find((r) => r.studentid === trimmedStudentId) ??
+      labsModel.lab.rows.find((r) => r.studentid === studentName) ??
       null;
 
     const labColumns =
       labsModel.lab.columnDefs
         ?.map((c) => c.field as string)
-        .filter((f) => f && f !== "studentid" && f !== "totalMinutes") ?? [];
+        .filter((f) => f && f !== "studentid" && f !== "full_name" && f !== "totalMinutes") ?? [];
 
     const hasCalData = studentCalRow != null && calModel.hasData;
     const hasLabData = studentLabRow != null && labsModel.hasData;

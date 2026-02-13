@@ -66,14 +66,35 @@ export class LabsModel {
     const labs = getDistinctLabs(records);
     const rows = buildLabsPivotedRows(records, "lab");
     const labColumns = buildLabColumns<LabRow>(labs, false);
+    const courseid = records.length > 0 ? records[0].course_id : "";
     const columnDefs: ColDef<LabRow>[] = [
       {
-        field: "studentid",
-        headerName: "Student ID",
-        minWidth: 120,
+        field: "full_name",
+        headerName: "Name",
+        minWidth: 160,
         flex: 1,
         pinned: "left",
-        cellStyle: { paddingLeft: "4px" }
+        cellStyle: { paddingLeft: "4px" },
+        cellRenderer: (params: { value?: string; data?: LabRow }) => {
+          const name = String(params.value ?? "");
+          const studentId = String(params.data?.studentid ?? "");
+          if (!studentId || !courseid) return name;
+          const href = `/${courseid}/${studentId}`;
+          return `<a href="${href}" class="underline text-primary-600">${name}</a>`;
+        }
+      },
+      {
+        field: "studentid",
+        headerName: "Github",
+        minWidth: 120,
+        pinned: "left",
+        cellStyle: { paddingLeft: "4px" },
+        cellRenderer: (params: { value?: string }) => {
+          const studentId = String(params.value ?? "");
+          if (!studentId || studentId === "Course median") return studentId === "Course median" ? "—" : studentId;
+          const href = `https://github.com/${studentId}`;
+          return `<a href="${href}" target="_blank" rel="noopener noreferrer" class="underline text-primary-600">${studentId}</a>`;
+        }
       },
       buildTotalMinutesColumn<LabRow>("totalMinutes", "Total"),
       ...labColumns
@@ -85,14 +106,35 @@ export class LabsModel {
     const steps = getDistinctLabSteps(records);
     const rows = buildLabsPivotedRows(records, "step");
     const stepColumns = buildLabColumns<LabRow>(steps, "step");
+    const courseid = records.length > 0 ? records[0].course_id : "";
     const columnDefs: ColDef<LabRow>[] = [
       {
-        field: "studentid",
-        headerName: "Student ID",
-        minWidth: 120,
+        field: "full_name",
+        headerName: "Name",
+        minWidth: 160,
         flex: 1,
         pinned: "left",
-        cellStyle: { paddingLeft: "4px" }
+        cellStyle: { paddingLeft: "4px" },
+        cellRenderer: (params: { value?: string; data?: LabRow }) => {
+          const name = String(params.value ?? "");
+          const studentId = String(params.data?.studentid ?? "");
+          if (!studentId || !courseid) return name;
+          const href = `/${courseid}/${studentId}`;
+          return `<a href="${href}" class="underline text-primary-600">${name}</a>`;
+        }
+      },
+      {
+        field: "studentid",
+        headerName: "Github",
+        minWidth: 120,
+        pinned: "left",
+        cellStyle: { paddingLeft: "4px" },
+        cellRenderer: (params: { value?: string }) => {
+          const studentId = String(params.value ?? "");
+          if (!studentId || studentId === "Course median") return studentId === "Course median" ? "—" : studentId;
+          const href = `https://github.com/${studentId}`;
+          return `<a href="${href}" target="_blank" rel="noopener noreferrer" class="underline text-primary-600">${studentId}</a>`;
+        }
       },
       buildTotalMinutesColumn<LabRow>("totalMinutes", "Total"),
       ...stepColumns

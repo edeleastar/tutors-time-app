@@ -7,7 +7,8 @@ export type LabViewMode = "lab" | "step";
 
 /** Pivoted row type for LabsGrid. */
 export type LabRow = {
-  studentid: string;
+  studentid: string; // raw github_id (for links)
+  full_name: string; // display name (from enrichment)
   totalMinutes: number;
   [lo_id: string]: string | number;
 };
@@ -113,17 +114,21 @@ export function buildLabsPivotedRows(records: LearningRecord[], viewMode: LabVie
   const columns = viewMode === "lab" ? getDistinctLabs(sortedRecords) : getDistinctLabSteps(sortedRecords);
 
   const map = new Map<string, number>();
+  const nameMap = new Map<string, string>();
 
   for (const record of sortedRecords) {
     const columnKey = viewMode === "lab" ? extractLabIdentifier(record.lo_id!) : record.lo_id!;
     const key = `${record.student_id}\t${columnKey}`;
     const duration = record.duration ?? 0;
     map.set(key, (map.get(key) ?? 0) + duration);
+    if (!nameMap.has(record.student_id)) {
+      nameMap.set(record.student_id, record.full_name ?? record.student_id);
+    }
   }
 
   return students.map((studentid) => {
     let totalMinutes = 0;
-    const row: LabRow = { studentid, totalMinutes: 0 };
+    const row: LabRow = { studentid, full_name: nameMap.get(studentid) ?? studentid, totalMinutes: 0 };
 
     for (const columnId of columns) {
       const blocks = map.get(`${studentid}\t${columnId}`) ?? 0;

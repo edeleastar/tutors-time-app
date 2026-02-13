@@ -34,10 +34,11 @@
       if (includeMedianRow && mode === "lab") {
         const medianRow = model.medianByLab.row;
         if (medianRow) {
-          const blankRow: LabRow = { studentid: "", totalMinutes: 0 };
+          const blankRow: LabRow = { studentid: "", full_name: "", totalMinutes: 0 };
           const combined: LabRow = {
             ...medianRow,
-            studentid: "Course median"
+            studentid: "Course median",
+            full_name: "Course median"
           };
           result = [...result, blankRow, combined];
         }

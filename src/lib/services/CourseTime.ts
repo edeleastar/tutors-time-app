@@ -238,10 +238,10 @@ export class CourseTime {
           nameMap[key] = displayName;
         }
 
-        // Replace student_id with the full name (or leave as-is if no match)
+        // Add full_name for display; keep student_id as raw github_id for links
         learningRecords = learningRecords.map((record) => ({
           ...record,
-          student_id: nameMap[record.student_id] ?? record.student_id
+          full_name: nameMap[record.student_id] ?? record.student_id
         }));
       }
     }

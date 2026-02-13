@@ -148,7 +148,8 @@
                 <table class="w-full border-collapse" style="table-layout: fixed;">
                   <thead>
                     <tr class="border-b-2 border-surface-300">
-                      <th class="text-left py-4 px-4 font-semibold" style="width: 160px;">Student ID</th>
+                      <th class="text-left py-4 px-4 font-semibold" style="width: 160px;">Name</th>
+                      <th class="text-left py-4 px-4 font-semibold" style="width: 120px;">Github</th>
                       {#each labColumns as labId}
                         <th class="text-center py-4 px-1 font-semibold align-middle" style="width: 36px; min-width: 36px; max-width: 36px; height: 140px; overflow: hidden;">
                           <div class="transform -rotate-90 whitespace-nowrap text-xs" style="height: 100%; display: flex; align-items: center; justify-content: center;">
@@ -163,6 +164,11 @@
                     <!-- Student Row -->
                     <tr class="border-b border-surface-200 hover:bg-surface-50">
                       <td class="py-3 px-4" style="width: 160px;">
+                        <a href="/{studentCalendar.courseid}/{studentCalendar.studentid}" class="underline text-primary-600">
+                          {studentLabRow.full_name}
+                        </a>
+                      </td>
+                      <td class="py-3 px-4" style="width: 120px;">
                         <a href="https://github.com/{studentCalendar.studentid}" target="_blank" rel="noopener noreferrer" class="underline text-primary-600">
                           {studentLabRow.studentid}
                         </a>
@@ -181,6 +187,7 @@
                     {#if labMedianRow}
                       <tr class="border-b-2 border-surface-300 bg-surface-100">
                         <td class="py-3 px-4 font-semibold" style="width: 160px;">Course Median</td>
+                        <td class="py-3 px-4" style="width: 120px;">—</td>
                         {#each labColumns as labId}
                           {@const labBlocks = labMedianRow[labId] as number | undefined}
                           <td class="py-3 px-1 text-center font-mono text-xs" style="width: 36px; min-width: 36px; max-width: 36px; background-color: {cellColorForMinutes(labBlocks ?? 0)}">
