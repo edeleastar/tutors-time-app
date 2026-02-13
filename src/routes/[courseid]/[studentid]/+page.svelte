@@ -1,6 +1,5 @@
 <script lang="ts">
   import type { StudentCalendar } from "$lib/types";
-  import type { CalendarRow, CalendarMedianRow } from "$lib/components/calendar/calendarUtils";
   import type { LabRow, LabMedianRow } from "$lib/components/labs/labUtils";
   import { formatDateShort, formatTimeMinutesOnly, cellColorForMinutes } from "$lib/components/calendar/calendarUtils";
   import { extractLabIdentifier } from "$lib/components/labs/labUtils";
@@ -12,7 +11,8 @@
   let loading = $state(true);
   let error = $state<string | null>(null);
 
-  const studentRow = $derived(studentCalendar?.calendarByWeek ?? null);
+  /** Student's calendar row (by week) - loaded from StudentCalendar.calendarByWeek */
+  const calendarByWeek = $derived(studentCalendar?.calendarByWeek ?? null);
   const medianRow = $derived(studentCalendar?.courseMedianByWeek ?? null);
   const weeks = $derived(studentCalendar?.weeks ?? []);
   const studentLabRow = $derived(studentCalendar?.labsByLab ?? null);
@@ -80,8 +80,8 @@
         </div>
       {:else if studentCalendar}
         <div class="flex flex-col gap-6 flex-1 min-h-0 overflow-auto">
-          <!-- Calendar Table -->
-          {#if studentRow}
+          <!-- Calendar Table (from StudentCalendar.calendarByWeek) -->
+          {#if calendarByWeek}
             <section class="card p-6">
               <h2 class="text-2xl font-semibold mb-4">Calendar Activity by Week</h2>
               <div class="overflow-x-auto">
@@ -100,22 +100,22 @@
                     </tr>
                   </thead>
                   <tbody>
-                    <!-- Student Row -->
+                    <!-- Student Row (from calendarByWeek) -->
                     <tr class="border-b border-surface-200 hover:bg-surface-50">
                       <td class="py-3 px-4" style="width: 160px;">
                         <a href="/{studentCalendar.courseid}/{studentCalendar.studentid}" class="underline text-primary-600">
-                          {studentRow.full_name}
+                          {calendarByWeek.full_name}
                         </a>
                       </td>
                       {#each weeks as week}
-                        {@const weekSeconds = studentRow[week] as number | undefined}
-                        {@const weekBlocks = weekSeconds != null ? Math.round(weekSeconds / 30) : 0}
+                        {@const weekMinutes = calendarByWeek[week] as number | undefined}
+                        {@const weekBlocks = weekMinutes != null ? weekMinutes : 0}
                         <td class="py-3 px-1 text-center font-mono text-xs" style="width: 36px; min-width: 36px; max-width: 36px; background-color: {cellColorForMinutes(weekBlocks)}">
-                          {formatTime(weekSeconds)}
+                          {weekMinutes}
                         </td>
                       {/each}
-                      <td class="py-3 px-4 text-right font-mono font-semibold" style="background-color: {cellColorForMinutes(studentRow.totalSeconds != null ? Math.round(studentRow.totalSeconds / 30) : 0)}">
-                        {formatTime(studentRow.totalSeconds)}
+                      <td class="py-3 px-4 text-right font-mono font-semibold" style="background-color: {cellColorForMinutes(calendarByWeek.totalSeconds != null ? Math.round(calendarByWeek.totalSeconds / 30) : 0)}">
+                        {formatTime(calendarByWeek.totalSeconds)}
                       </td>
                     </tr>
                     <!-- Median Row -->
