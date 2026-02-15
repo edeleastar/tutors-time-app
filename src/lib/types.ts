@@ -2,7 +2,7 @@ export interface CalendarEntryBase {
   id: string; // DATE as string (YYYY-MM-DD format)
   studentid: string; // raw student identifier (e.g. github_id)
   courseid: string;
-  timeactive: number; // BIGINT
+  timeactive: number; // minutes (converted from 30-second blocks at load)
   pageloads: number; // BIGINT
 }
 
@@ -38,7 +38,7 @@ export interface LearningRecord {
   student_id: string; // text not null (github_id, used for links)
   full_name?: string; // added during enrichment from tutors-connect-users
   lo_id: string | null; // text null
-  duration: number | null; // bigint null
+  duration: number | null; // minutes (converted from 30-second blocks at load)
   count: number | null; // bigint null
   date_last_accessed: string | null; // timestamptz null (ISO string)
   type: string | null; // text null

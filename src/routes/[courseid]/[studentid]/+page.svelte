@@ -25,15 +25,15 @@
   const labMedianRow = $derived(studentCalendar?.labsMedianByLab ?? null);
   const labColumns = $derived(studentCalendar?.labColumns ?? []);
 
-  function formatTime(seconds: number | undefined): string {
-    if (seconds == null || seconds === 0) return "—";
-    const minutes = Math.round(seconds / 60);
-    return `${minutes}`;
+  // Values are already in minutes (converted at load)
+  function formatTime(minutes: number | undefined): string {
+    if (minutes == null || minutes === 0) return "—";
+    return `${Math.round(minutes)}`;
   }
 
-  function formatLabTime(blocks: number | undefined): string {
-    if (blocks == null || blocks === 0) return "—";
-    return formatTimeMinutesOnly(blocks);
+  function formatLabTime(minutes: number | undefined): string {
+    if (minutes == null || minutes === 0) return "—";
+    return formatTimeMinutesOnly(minutes);
   }
 
   onMount(async () => {
@@ -138,7 +138,7 @@
                           {weekMinutes}
                         </td>
                       {/each}
-                      <td class="py-3 px-4 text-right font-mono font-semibold" style="background-color: {cellColorForMinutes(calendarByWeek.totalSeconds != null ? Math.round(calendarByWeek.totalSeconds / 30) : 0)}">
+                      <td class="py-3 px-4 text-right font-mono font-semibold" style="background-color: {cellColorForMinutes(calendarByWeek.totalSeconds ?? 0)}">
                         {formatTime(calendarByWeek.totalSeconds)}
                       </td>
                     </tr>

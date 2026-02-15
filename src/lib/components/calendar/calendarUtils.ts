@@ -46,9 +46,9 @@ function median(values: number[]): number {
 
 /**
  * Get the median duration (timeactive) for all entries on a specific date.
- * @param entries Array of calendar entries
+ * @param entries Array of calendar entries (timeactive already in minutes)
  * @param date Date string in YYYY-MM-DD format
- * @returns Median duration in 30-second blocks, or 0 if no entries for that date
+ * @returns Median duration in minutes, or 0 if no entries for that date
  */
 export function getMedianForDate(entries: CalendarEntry[], date: string): number {
   const entriesForDate = entries.filter((entry) => entry.id === date);
@@ -73,31 +73,30 @@ export function formatDateShort(dateString: string): string {
 }
 
 /** Time to nearest minute only (e.g. "1h 30", "45").
- *  NOTE: input is a count of 30-second blocks, not raw seconds.
+ *  NOTE: input is already in minutes (converted at load).
  */
-export function formatTimeNearestMinute(blocks: number): string {
-  const totalMinutes = Math.round((blocks * 30) / 60); // 30-second blocks -> minutes
+export function formatTimeNearestMinute(minutes: number): string {
+  const totalMinutes = Math.round(minutes);
   const hours = Math.floor(totalMinutes / 60);
-  const minutes = totalMinutes % 60;
+  const mins = totalMinutes % 60;
   if (hours > 0) {
-    return `${hours}h ${minutes}`;
+    return `${hours}h ${mins}`;
   }
-  return `${minutes}`;
+  return `${mins}`;
 }
 
 /** Time in minutes only, no hours (e.g. "90", "45").
- *  NOTE: input is a count of 30-second blocks, not raw seconds.
+ *  NOTE: input is already in minutes (converted at load).
  */
-export function formatTimeMinutesOnly(blocks: number): string {
-  const totalMinutes = Math.round((blocks * 30) / 60); // 30-second blocks -> minutes
-  return `${totalMinutes}`;
+export function formatTimeMinutesOnly(minutes: number): string {
+  return `${Math.round(minutes)}`;
 }
 
 /** Background colour by minutes: 0 = white, 1 = light green, 1–200 = deeper green, 200–400 = light red, 400–800 = deep red.
- *  NOTE: input is a count of 30-second blocks, not raw seconds.
+ *  NOTE: input is already in minutes (converted at load).
  */
-export function cellColorForMinutes(blocks: number | null | undefined): string {
-  const minutes = blocks != null ? (Number(blocks) * 30) / 60 : 0; // 30-second blocks -> minutes
+export function cellColorForMinutes(minutes: number | null | undefined): string {
+  const mins = minutes != null ? Number(minutes) : 0;
   const white = { r: 255, g: 255, b: 255 };
   const lightGreen = { r: 200, g: 255, b: 200 };
   const deepGreen = { r: 0, g: 120, b: 0 };
@@ -106,31 +105,31 @@ export function cellColorForMinutes(blocks: number | null | undefined): string {
   let r: number;
   let g: number;
   let b: number;
-  if (minutes <= 0) {
+  if (mins <= 0) {
     r = white.r;
     g = white.g;
     b = white.b;
-  } else if (minutes <= 1) {
+  } else if (mins <= 1) {
     // Transition from white to light green (0-1 minutes)
-    const t = minutes;
+    const t = mins;
     r = Math.round(white.r + t * (lightGreen.r - white.r));
     g = Math.round(white.g + t * (lightGreen.g - white.g));
     b = Math.round(white.b + t * (lightGreen.b - white.b));
-  } else if (minutes <= 200) {
+  } else if (mins <= 200) {
     // Transition from light green to deep green (1-200 minutes)
-    const t = (minutes - 1) / 199;
+    const t = (mins - 1) / 199;
     r = Math.round(lightGreen.r + t * (deepGreen.r - lightGreen.r));
     g = Math.round(lightGreen.g + t * (deepGreen.g - lightGreen.g));
     b = Math.round(lightGreen.b + t * (deepGreen.b - lightGreen.b));
-  } else if (minutes <= 400) {
+  } else if (mins <= 400) {
     // Transition from deep green to light red (200-400 minutes)
-    const t = (minutes - 200) / 200;
+    const t = (mins - 200) / 200;
     r = Math.round(deepGreen.r + t * (lightRed.r - deepGreen.r));
     g = Math.round(deepGreen.g + t * (lightRed.g - deepGreen.g));
     b = Math.round(deepGreen.b + t * (lightRed.b - deepGreen.b));
   } else {
     // Transition from light red to deep red (400-800 minutes)
-    const t = Math.min(1, (minutes - 400) / 400);
+    const t = Math.min(1, (mins - 400) / 400);
     r = Math.round(lightRed.r + t * (deepRed.r - lightRed.r));
     g = Math.round(lightRed.g + t * (deepRed.g - lightRed.g));
     b = Math.round(lightRed.b + t * (deepRed.b - lightRed.b));
@@ -147,7 +146,7 @@ export function buildTotalSecondsColumn<T = any>(field: string = "totalSeconds",
     sort: "desc",
     valueFormatter: (p) =>
       p.value != null && Number(p.value) > 0
-        ? String(Math.round((Number(p.value) * 30) / 60)) // 30-second blocks -> minutes
+        ? String(Math.round(Number(p.value))) // value already in minutes
         : "",
     cellClass: "ag-right-aligned-cell",
     cellStyle: (p) => ({

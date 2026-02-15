@@ -38,10 +38,9 @@
     }
   }
 
-  // `timeactive` is stored as a count of 30-second durations; convert to minutes for display.
-  function formatTime(blocks: number): string {
-    const minutes = Math.round((blocks * 30) / 60); // 30-second blocks -> minutes
-    return `${minutes}`;
+  // timeactive is already in minutes (converted at load)
+  function formatTime(minutes: number): string {
+    return `${Math.round(minutes)}`;
   }
 </script>
 

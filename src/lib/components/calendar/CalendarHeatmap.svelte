@@ -3,7 +3,7 @@
   import type { CalendarRow, CalendarMedianRow } from "$lib/components/calendar/calendarUtils";
 
   interface Props {
-    /** Calendar row with date keys (YYYY-MM-DD) and values in 30-second blocks per day */
+    /** Calendar row with date keys (YYYY-MM-DD) and values in minutes per day */
     calendarByDay: CalendarRow | CalendarMedianRow | null;
     /** Date identifiers (YYYY-MM-DD) for each day */
     dates: string[];
@@ -43,9 +43,8 @@
     heat.render(container, bindingOptions);
 
     for (const dateStr of dates) {
-      /** Values are 30-second blocks; convert to minutes: blocks * 30 / 60 */
-      const blocks = (calendarByDay[dateStr] as number) ?? 0;
-      const countMinutes = Math.max(0, Math.round((blocks * 30) / 60));
+      /** Values are already in minutes (converted at load) */
+      const countMinutes = Math.max(0, Math.round((calendarByDay[dateStr] as number) ?? 0));
       const date = new Date(dateStr + "T12:00:00");
       heat.updateDate(id, date, countMinutes, "Unknown", false);
     }

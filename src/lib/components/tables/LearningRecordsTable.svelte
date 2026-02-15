@@ -43,11 +43,10 @@
     }
   }
 
-  // duration is stored as a count of 30-second blocks; convert to minutes for display
-  function formatDuration(blocks: number | null): string {
-    if (blocks === null) return "N/A";
-    const minutes = Math.round((blocks * 30) / 60); // 30-second blocks -> minutes
-    return `${minutes}`;
+  // duration is already in minutes (converted at load)
+  function formatDuration(minutes: number | null): string {
+    if (minutes === null) return "N/A";
+    return `${Math.round(minutes)}`;
   }
 </script>
 

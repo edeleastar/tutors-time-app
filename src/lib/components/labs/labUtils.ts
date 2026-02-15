@@ -182,7 +182,7 @@ export function buildTotalMinutesColumn<T = any>(field: string = "totalMinutes",
     sort: "desc",
     valueFormatter: (p) =>
       p.value != null && Number(p.value) > 0
-        ? String(Math.round((Number(p.value) * 30) / 60)) // 30-second blocks -> minutes
+        ? String(Math.round(Number(p.value))) // value already in minutes
         : "",
     cellClass: "ag-right-aligned-cell",
     cellStyle: (p) => ({
@@ -211,7 +211,7 @@ function median(values: number[]): number {
   return Math.round((sorted[mid - 1] + sorted[mid]) / 2);
 }
 
-/** Build median row for lab-by-day view: one row with median duration per date. Values in 30-second blocks. */
+/** Build median row for lab-by-day view: one row with median duration per date. Values in minutes. */
 export function buildMedianByDay(
   records: LearningRecord[],
   courseid: string,
@@ -269,7 +269,7 @@ export function buildMedianByLab(
   return row;
 }
 
-/** Build median row for lab-by-step view: one row with median duration per step. Values in 30-second blocks. */
+/** Build median row for lab-by-step view: one row with median duration per step. Values in minutes. */
 export function buildMedianByStep(
   records: LearningRecord[],
   courseid: string,

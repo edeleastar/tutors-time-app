@@ -145,12 +145,17 @@ export class CourseTime {
 
     const rawEntries: CalendarEntryBase[] = (data as CalendarEntryBase[]) ?? [];
 
+    /** Convert timeactive from 30-second blocks to minutes at load */
+    const toMinutes = (blocks: number | null | undefined): number =>
+      blocks != null ? Math.round((blocks * 30) / 60) : 0;
+
     // Look up student full names by studentid (github_id in tutors-connect-users)
     const studentIds = Array.from(new Set(rawEntries.map((e) => e.studentid).filter(Boolean)));
     if (!studentIds.length) {
       // No users to look up; fall back to using studentid as full_name
       return rawEntries.map<CalendarEntry>((entry) => ({
         ...entry,
+        timeactive: toMinutes(entry.timeactive),
         full_name: entry.studentid
       }));
     }
@@ -164,6 +169,7 @@ export class CourseTime {
       // If lookup fails, fall back to raw student IDs
       return rawEntries.map<CalendarEntry>((entry) => ({
         ...entry,
+        timeactive: toMinutes(entry.timeactive),
         full_name: entry.studentid
       }));
     }
@@ -177,9 +183,10 @@ export class CourseTime {
       nameMap[key] = displayName;
     }
 
-    // Attach full_name while preserving raw studentid
+    // Attach full_name while preserving raw studentid; timeactive converted to minutes
     return rawEntries.map<CalendarEntry>((entry) => ({
       ...entry,
+      timeactive: toMinutes(entry.timeactive),
       full_name: nameMap[entry.studentid] ?? entry.studentid
     }));
   }
@@ -205,6 +212,12 @@ export class CourseTime {
     }
 
     let learningRecords: LearningRecord[] = (data as LearningRecord[]) ?? [];
+
+    /** Convert duration from 30-second blocks to minutes at load */
+    learningRecords = learningRecords.map((r) => ({
+      ...r,
+      duration: r.duration != null ? Math.round((r.duration * 30) / 60) : null
+    }));
 
     // Sort learning records: primary key by student_id, secondary key by lo_id
     learningRecords.sort((a, b) => {
