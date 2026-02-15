@@ -11,14 +11,7 @@
 
 <AppBar>
   <AppBar.Toolbar class="grid-cols-[1fr_2fr_1fr]">
-    <AppBar.Lead />
-    <AppBar.Headline class="flex flex-col justify-center items-center text-center">
-      <p class="font-semibold truncate max-w-full">{title}</p>
-      {#if subtitle}
-        <p class="text-sm text-surface-600 truncate max-w-full">{subtitle}</p>
-      {/if}
-    </AppBar.Headline>
-    <AppBar.Trail class="justify-end">
+    <AppBar.Lead class="justify-start">
       {#if data.courseId}
         <button
           type="button"
@@ -29,7 +22,14 @@
           Change course
         </button>
       {/if}
-    </AppBar.Trail>
+    </AppBar.Lead>
+    <AppBar.Headline class="flex flex-col justify-center items-center text-center">
+      <p class="font-semibold truncate max-w-full">{title}</p>
+      {#if subtitle}
+        <p class="text-sm text-surface-600 truncate max-w-full">{subtitle}</p>
+      {/if}
+    </AppBar.Headline>
+    <AppBar.Trail />
   </AppBar.Toolbar>
 </AppBar>
 

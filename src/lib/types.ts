@@ -71,6 +71,8 @@ export type StudentCalendar = {
   courseTitle: string;
   studentid: string;
   studentName: string;
+  /** Student avatar URL from tutors-connect-users (null if not set or fetch failed) */
+  avatarUrl: string | null;
   /** Student's calendar row (by week view) */
   calendarByWeek: CalendarRow | null;
   /** Week column field names for calendar display */

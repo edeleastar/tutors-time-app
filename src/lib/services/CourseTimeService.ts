@@ -1,8 +1,20 @@
 import { CourseTime } from "./CourseTime";
+import { getSupabase } from "./supabase";
 import type { StudentCalendar } from "../types";
 import { buildLabRowByDay, buildMedianByDay } from "$lib/components/labs/labUtils";
 
 const courseMap = new Map<string, CourseTime>();
+
+async function getAvatarUrl(githubId: string): Promise<string | null> {
+  const supabase = getSupabase();
+  const { data } = await supabase
+    .from("tutors-connect-users")
+    .select("avatar_url")
+    .eq("github_id", githubId)
+    .maybeSingle();
+  const row = data as { avatar_url?: string | null } | null;
+  return row?.avatar_url ?? null;
+}
 
 export const CourseTimeService = {
   /**
@@ -59,11 +71,13 @@ export const CourseTimeService = {
     const course = courseTime.courseData;
 
     if (!course) {
+      const avatarUrl = await getAvatarUrl(trimmedStudentId);
       return {
         courseid: trimmedCourseId,
         courseTitle: trimmedCourseId,
         studentid: trimmedStudentId,
         studentName: trimmedStudentId,
+        avatarUrl,
         calendarByWeek: null,
         weeks: [],
         courseMedianByWeek: null,
@@ -125,11 +139,14 @@ export const CourseTimeService = {
     const hasCalData = (studentCalRowWeek != null || studentCalRowDay != null) && calModel.hasData;
     const hasLabData = studentLabRow != null && labsModel.hasData;
 
+    const avatarUrl = await getAvatarUrl(trimmedStudentId);
+
     return {
       courseid: course.id,
       courseTitle: course.title,
       studentid: trimmedStudentId,
       studentName,
+      avatarUrl,
       calendarByWeek: studentCalRowWeek,
       weeks,
       courseMedianByWeek: calModel.medianByWeek.row ?? null,
