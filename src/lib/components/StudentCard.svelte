@@ -20,12 +20,12 @@
     <img
       src={avatarUrl}
       alt=""
-      class="rounded-full object-cover bg-surface-200 {compact ? 'size-12' : 'size-20 sm:size-24'}"
+      class="rounded-full object-cover bg-surface-200 {compact ? 'size-14' : 'size-20 sm:size-24'}"
     />
   {:else}
     <div
       class="rounded-full bg-surface-300 flex items-center justify-center text-surface-600 font-semibold shrink-0 {compact
-        ? 'size-12 text-base'
+        ? 'size-14 text-base'
         : 'size-20 sm:size-24 text-2xl'}"
       aria-hidden="true"
     >

@@ -25,23 +25,21 @@
         </button>
       {/if}
     </AppBar.Lead>
-    <AppBar.Headline class="flex flex-col justify-center items-center text-center">
-      <div class="flex items-center justify-center gap-2">
-        {#if data.courseIcon}
-          <Icon
-            icon={data.courseIcon.type}
-            class="size-8 shrink-0"
-            style={data.courseIcon.color ? `color: ${data.courseIcon.color}` : undefined}
-          />
-        {:else if data.courseImg}
-          <img
-            src={data.courseImg}
-            alt=""
-            class="size-8 rounded object-cover shrink-0"
-          />
-        {/if}
-        <p class="font-semibold truncate max-w-full">{title}</p>
-      </div>
+    <AppBar.Headline class="grid grid-cols-[auto_1fr] grid-rows-[auto_auto] items-center gap-x-2 gap-y-0 text-left h-full min-w-0">
+      {#if data.courseIcon}
+        <Icon
+          icon={data.courseIcon.type}
+          class="h-full w-auto shrink-0 row-span-2 self-center"
+          style={data.courseIcon.color ? `color: ${data.courseIcon.color}` : undefined}
+        />
+      {:else if data.courseImg}
+        <img
+          src={data.courseImg}
+          alt=""
+          class="size-14 rounded object-contain shrink-0 row-span-2 self-center"
+        />
+      {/if}
+      <p class="font-semibold truncate max-w-full">{title}</p>
       {#if subtitle}
         <p class="text-sm text-surface-600 truncate max-w-full">{subtitle}</p>
       {/if}
