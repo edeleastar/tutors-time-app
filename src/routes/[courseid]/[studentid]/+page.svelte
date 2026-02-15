@@ -1,9 +1,8 @@
 <script lang="ts">
   import type { StudentCalendar } from "$lib/types";
-  import type { LabRow, LabMedianRow } from "$lib/components/labs/labUtils";
-  import { formatDateShort, formatTimeMinutesOnly, cellColorForMinutes } from "$lib/components/calendar/calendarUtils";
-  import { extractLabIdentifier } from "$lib/components/labs/labUtils";
   import CalendarHeatmap from "$lib/components/calendar/CalendarHeatmap.svelte";
+  import StudentCalendarTable from "$lib/components/tables/StudentCalendarTable.svelte";
+  import StudentLabTable from "$lib/components/tables/StudentLabTable.svelte";
   import { CourseTimeService } from "$lib/services/CourseTimeService";
   import { onMount } from "svelte";
   import { page } from "$app/stores";
@@ -24,17 +23,6 @@
   const studentLabRow = $derived(studentCalendar?.labsByLab ?? null);
   const labMedianRow = $derived(studentCalendar?.labsMedianByLab ?? null);
   const labColumns = $derived(studentCalendar?.labColumns ?? []);
-
-  // Values are already in minutes (converted at load)
-  function formatTime(minutes: number | undefined): string {
-    if (minutes == null || minutes === 0) return "—";
-    return `${Math.round(minutes)}`;
-  }
-
-  function formatLabTime(minutes: number | undefined): string {
-    if (minutes == null || minutes === 0) return "—";
-    return formatTimeMinutesOnly(minutes);
-  }
 
   onMount(async () => {
     const rawCourseId: string | undefined = $page.params.courseid as string | undefined;
@@ -104,137 +92,20 @@
         </div>
       {:else if studentCalendar}
         <div class="flex flex-col gap-6">
-          <!-- Calendar Table (from StudentCalendar.calendarByWeek) -->
-          {#if calendarByWeek}
-            <section class="card p-6">
-              <h2 class="text-2xl font-semibold mb-4">Calendar Activity by Week</h2>
-              <div class="overflow-x-auto">
-                <table class="w-full border-collapse" style="table-layout: fixed;">
-                  <thead>
-                    <tr class="border-b-2 border-surface-300">
-                      <th class="text-left py-4 px-4 font-semibold" style="width: 160px;">Name</th>
-                      <th class="text-left py-4 px-4 font-semibold" style="width: 120px;">Github</th>
-                      {#each weeks as week}
-                        <th class="text-center py-4 px-1 font-semibold align-middle" style="width: 36px; min-width: 36px; max-width: 36px; height: 140px; overflow: hidden;">
-                          <div class="transform -rotate-90 whitespace-nowrap text-xs" style="height: 100%; display: flex; align-items: center; justify-content: center;">
-                            {formatDateShort(week)}
-                          </div>
-                        </th>
-                      {/each}
-                      <th class="text-right py-4 px-4 font-semibold">Total</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <!-- Student Row (from calendarByWeek) -->
-                    <tr class="border-b border-surface-200 hover:bg-surface-50">
-                      <td class="py-3 px-4" style="width: 160px;">
-                        <a href="/{studentCalendar.courseid}/{studentCalendar.studentid}" class="underline text-primary-600">
-                          {calendarByWeek.full_name}
-                        </a>
-                      </td>
-                      <td class="py-3 px-4" style="width: 120px;">
-                        <a href="https://github.com/{studentCalendar.studentid}" target="_blank" rel="noopener noreferrer" class="underline text-primary-600">
-                          {studentCalendar.studentid}
-                        </a>
-                      </td>
-                      {#each weeks as week}
-                        {@const weekMinutes = calendarByWeek[week] as number | undefined}
-                        {@const weekBlocks = weekMinutes != null ? weekMinutes : 0}
-                        <td class="py-3 px-1 text-center font-mono text-xs" style="width: 36px; min-width: 36px; max-width: 36px; background-color: {cellColorForMinutes(weekBlocks)}">
-                          {weekMinutes}
-                        </td>
-                      {/each}
-                      <td class="py-3 px-4 text-right font-mono font-semibold" style="background-color: {cellColorForMinutes(calendarByWeek.totalSeconds ?? 0)}">
-                        {formatTime(calendarByWeek.totalSeconds)}
-                      </td>
-                    </tr>
-                    <!-- Median Row -->
-                    {#if medianRow}
-                      {@const totalBlocks = medianRow.totalSeconds ?? 0}
-                      <tr class="border-b-2 border-surface-300 bg-surface-100">
-                        <td class="py-3 px-4 font-semibold" style="width: 160px;">Course Median</td>
-                        <td class="py-3 px-4" style="width: 120px;">—</td>
-                        {#each weeks as week}
-                          {@const weekBlocks = medianRow[week] as number | undefined}
-                          <td class="py-3 px-1 text-center font-mono text-xs" style="width: 36px; min-width: 36px; max-width: 36px; background-color: {cellColorForMinutes(weekBlocks ?? 0)}">
-                            {formatLabTime(weekBlocks)}
-                          </td>
-                        {/each}
-                        <td class="py-3 px-4 text-right font-mono font-semibold" style="background-color: {cellColorForMinutes(totalBlocks)}">
-                          {formatLabTime(medianRow.totalSeconds)}
-                        </td>
-                      </tr>
-                    {/if}
-                  </tbody>
-                </table>
-              </div>
-            </section>
-          {/if}
-
-          <!-- Labs Table -->
-          {#if studentLabRow}
-            <section class="card p-6">
-              <h2 class="text-2xl font-semibold mb-4">Lab Activity by Lab</h2>
-              <div class="overflow-x-auto">
-                <table class="w-full border-collapse" style="table-layout: fixed;">
-                  <thead>
-                    <tr class="border-b-2 border-surface-300">
-                      <th class="text-left py-4 px-4 font-semibold" style="width: 160px;">Name</th>
-                      <th class="text-left py-4 px-4 font-semibold" style="width: 120px;">Github</th>
-                      {#each labColumns as labId}
-                        <th class="text-center py-4 px-1 font-semibold align-middle" style="width: 36px; min-width: 36px; max-width: 36px; height: 140px; overflow: hidden;">
-                          <div class="transform -rotate-90 whitespace-nowrap text-xs" style="height: 100%; display: flex; align-items: center; justify-content: center;">
-                            {extractLabIdentifier(labId)}
-                          </div>
-                        </th>
-                      {/each}
-                      <th class="text-right py-4 px-4 font-semibold">Total</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <!-- Student Row -->
-                    <tr class="border-b border-surface-200 hover:bg-surface-50">
-                      <td class="py-3 px-4" style="width: 160px;">
-                        <a href="/{studentCalendar.courseid}/{studentCalendar.studentid}" class="underline text-primary-600">
-                          {studentLabRow.full_name}
-                        </a>
-                      </td>
-                      <td class="py-3 px-4" style="width: 120px;">
-                        <a href="https://github.com/{studentCalendar.studentid}" target="_blank" rel="noopener noreferrer" class="underline text-primary-600">
-                          {studentLabRow.studentid}
-                        </a>
-                      </td>
-                      {#each labColumns as labId}
-                        {@const labBlocks = studentLabRow[labId] as number | undefined}
-                        <td class="py-3 px-1 text-center font-mono text-xs" style="width: 36px; min-width: 36px; max-width: 36px; background-color: {cellColorForMinutes(labBlocks ?? 0)}">
-                          {formatLabTime(labBlocks)}
-                        </td>
-                      {/each}
-                      <td class="py-3 px-4 text-right font-mono font-semibold" style="background-color: {cellColorForMinutes(studentLabRow.totalMinutes ?? 0)}">
-                        {formatLabTime(studentLabRow.totalMinutes)}
-                      </td>
-                    </tr>
-                    <!-- Median Row -->
-                    {#if labMedianRow}
-                      <tr class="border-b-2 border-surface-300 bg-surface-100">
-                        <td class="py-3 px-4 font-semibold" style="width: 160px;">Course Median</td>
-                        <td class="py-3 px-4" style="width: 120px;">—</td>
-                        {#each labColumns as labId}
-                          {@const labBlocks = labMedianRow[labId] as number | undefined}
-                          <td class="py-3 px-1 text-center font-mono text-xs" style="width: 36px; min-width: 36px; max-width: 36px; background-color: {cellColorForMinutes(labBlocks ?? 0)}">
-                            {formatLabTime(labBlocks)}
-                          </td>
-                        {/each}
-                        <td class="py-3 px-4 text-right font-mono font-semibold" style="background-color: {cellColorForMinutes(labMedianRow.totalMinutes ?? 0)}">
-                          {formatLabTime(labMedianRow.totalMinutes)}
-                        </td>
-                      </tr>
-                    {/if}
-                  </tbody>
-                </table>
-              </div>
-            </section>
-          {/if}
+          <StudentCalendarTable
+            courseid={studentCalendar.courseid}
+            studentid={studentCalendar.studentid}
+            calendarByWeek={calendarByWeek}
+            medianRow={medianRow}
+            weeks={weeks}
+          />
+          <StudentLabTable
+            courseid={studentCalendar.courseid}
+            studentid={studentCalendar.studentid}
+            studentLabRow={studentLabRow}
+            labMedianRow={labMedianRow}
+            labColumns={labColumns}
+          />
         </div>
       {/if}
     </div>
