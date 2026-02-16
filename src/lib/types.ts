@@ -76,6 +76,12 @@ export type CourseCalendar = {
   labsModel: LabsModel;
   /** Lab median by day (from learning records). Set when dates available (e.g. in student view). */
   labsMedianByDay?: LabMedianRow | null;
+  /** Week column names (from calendarModel.week). Set in student view. */
+  weeks?: string[];
+  /** Date column names (from calendarModel.day). Set in student view. */
+  dates?: string[];
+  /** Lab column names (from labsModel.lab). Set in student view. */
+  labColumns?: string[];
 };
 
 // Single-student calendar view for a given course (extracted from CourseTime)

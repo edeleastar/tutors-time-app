@@ -117,6 +117,16 @@ export const CourseTimeService = {
         ?.map((c) => c.field as string)
         .filter((f) => f && f !== "full_name" && f !== "studentid" && f !== "totalSeconds") ?? [];
 
+    const weeks =
+      calModel.week.columnDefs
+        ?.map((c) => c.field as string)
+        .filter((f) => f && f !== "full_name" && f !== "studentid" && f !== "totalSeconds") ?? [];
+
+    const labColumns =
+      labsModel.lab.columnDefs
+        ?.map((c) => c.field as string)
+        .filter((f) => f && f !== "studentid" && f !== "full_name" && f !== "totalMinutes") ?? [];
+
     const studentLabRow =
       labsModel.lab.rows.find((r) => r.studentid === trimmedStudentId) ??
       labsModel.lab.rows.find((r) => r.studentid === studentName) ??
@@ -144,7 +154,10 @@ export const CourseTimeService = {
 
     const courseWithMedians: CourseCalendar = {
       ...course,
-      labsMedianByDay
+      labsMedianByDay,
+      weeks,
+      dates,
+      labColumns
     };
 
     return {

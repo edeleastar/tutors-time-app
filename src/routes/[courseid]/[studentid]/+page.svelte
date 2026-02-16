@@ -12,24 +12,6 @@
   let error = $state<string | null>(null);
 
   const course = $derived(studentCalendar?.course ?? null);
-  /** Week column names – from course.calendarModel */
-  const weeks = $derived(
-    course?.calendarModel?.week?.columnDefs
-      ?.map((c) => c.field as string)
-      .filter((f) => f && f !== "full_name" && f !== "studentid" && f !== "totalSeconds") ?? []
-  );
-  /** Date column names – from course.calendarModel */
-  const dates = $derived(
-    course?.calendarModel?.day?.columnDefs
-      ?.map((c) => c.field as string)
-      .filter((f) => f && f !== "full_name" && f !== "studentid" && f !== "totalSeconds") ?? []
-  );
-  /** Lab column names – from course.labsModel */
-  const labColumns = $derived(
-    course?.labsModel?.lab?.columnDefs
-      ?.map((c) => c.field as string)
-      .filter((f) => f && f !== "studentid" && f !== "full_name" && f !== "totalMinutes") ?? []
-  );
   onMount(async () => {
     const rawCourseId: string | undefined = $page.params.courseid as string | undefined;
     const rawStudentId: string | undefined = $page.params.studentid as string | undefined;
@@ -62,30 +44,30 @@
 
 <section class="p-2 h-[calc(100vh-4rem)] flex flex-col min-h-0 overflow-y-auto">
   <!-- Heatmaps: full width, stacked above tables (both in scroll flow) -->
-  {#if studentCalendar && dates.length > 0}
+  {#if studentCalendar && (course?.dates?.length ?? 0) > 0}
     <section class="heatmap-full-width shrink-0 py-4 -mx-2 w-[calc(100%+1rem)] min-w-0 space-y-6">
       {#if studentCalendar?.calendarByDay}
         <div class="px-4">
           <h2 class="text-2xl font-semibold mb-4">Calendar Activity Heatmap – {studentCalendar.studentName}</h2>
-          <CalendarHeatmap calendarByDay={studentCalendar.calendarByDay} {dates} elementId="student-activity-heatmap" />
+          <CalendarHeatmap calendarByDay={studentCalendar.calendarByDay} dates={course?.dates ?? []} elementId="student-activity-heatmap" />
         </div>
       {/if}
       {#if course?.calendarModel?.medianByDay?.row}
         <div class="px-4">
           <h2 class="text-2xl font-semibold mb-4">Course Median Activity Heatmap</h2>
-          <CalendarHeatmap calendarByDay={course.calendarModel.medianByDay.row} {dates} elementId="course-median-heatmap" />
+          <CalendarHeatmap calendarByDay={course.calendarModel.medianByDay.row} dates={course?.dates ?? []} elementId="course-median-heatmap" />
         </div>
       {/if}
       {#if studentCalendar?.labsByDay}
         <div class="px-4">
           <h2 class="text-2xl font-semibold mb-4">Lab Activity by Day – {studentCalendar.studentName}</h2>
-          <CalendarHeatmap calendarByDay={studentCalendar.labsByDay} {dates} elementId="student-lab-heatmap" />
+          <CalendarHeatmap calendarByDay={studentCalendar.labsByDay} dates={course?.dates ?? []} elementId="student-lab-heatmap" />
         </div>
       {/if}
       {#if course?.labsMedianByDay}
         <div class="px-4">
           <h2 class="text-2xl font-semibold mb-4">Lab Median Activity by Day</h2>
-          <CalendarHeatmap calendarByDay={course.labsMedianByDay} {dates} elementId="lab-median-heatmap" />
+          <CalendarHeatmap calendarByDay={course.labsMedianByDay} dates={course?.dates ?? []} elementId="lab-median-heatmap" />
         </div>
       {/if}
     </section>
@@ -115,14 +97,14 @@
             studentid={studentCalendar.studentid}
             calendarByWeek={studentCalendar.calendarByWeek}
             medianRow={course?.calendarModel?.medianByWeek?.row ?? null}
-            weeks={weeks}
+            weeks={course?.weeks ?? []}
           />
           <StudentLabTable
             courseid={studentCalendar.courseid}
             studentid={studentCalendar.studentid}
             studentLabRow={studentCalendar.labsByLab}
             labMedianRow={course?.labsModel?.medianByLab?.row ?? null}
-            labColumns={labColumns}
+            labColumns={course?.labColumns ?? []}
           />
         </div>
       {/if}
