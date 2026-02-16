@@ -5,35 +5,24 @@ import { buildLabRowByDay, buildMedianByDay } from "$lib/components/labs/labUtil
 
 const courseMap = new Map<string, CourseTime>();
 
-async function getAvatarUrl(githubId: string): Promise<string | null> {
-  const supabase = getSupabase();
-  const { data } = await supabase
-    .from("tutors-connect-users")
-    .select("avatar_url")
-    .eq("github_id", githubId)
-    .maybeSingle();
-  const row = data as { avatar_url?: string | null } | null;
-  return row?.avatar_url ?? null;
-}
-
-/** Fetch student display name and avatar for app bar (used when on student route). */
-export async function getStudentDisplayInfo(
-  studentId: string
-): Promise<{ studentName: string; avatarUrl: string | null }> {
-  const supabase = getSupabase();
-  const { data } = await supabase
-    .from("tutors-connect-users")
-    .select("full_name, avatar_url")
-    .eq("github_id", studentId.trim())
-    .maybeSingle();
-  const row = data as { full_name?: string | null; avatar_url?: string | null } | null;
-  const studentName =
-    row?.full_name && String(row.full_name).trim().length > 0 ? String(row.full_name).trim() : studentId.trim();
-  const avatarUrl = row?.avatar_url ?? null;
-  return { studentName, avatarUrl };
-}
-
 export const CourseTimeService = {
+  /** Fetch student display name and avatar for app bar (used when on student route). */
+  async getStudentDisplayInfo(
+    studentId: string
+  ): Promise<{ studentName: string; avatarUrl: string | null }> {
+    const supabase = getSupabase();
+    const { data } = await supabase
+      .from("tutors-connect-users")
+      .select("full_name, avatar_url")
+      .eq("github_id", studentId.trim())
+      .maybeSingle();
+    const row = data as { full_name?: string | null; avatar_url?: string | null } | null;
+    const studentName =
+      row?.full_name && String(row.full_name).trim().length > 0 ? String(row.full_name).trim() : studentId.trim();
+    const avatarUrl = row?.avatar_url ?? null;
+    return { studentName, avatarUrl };
+  },
+
   /**
    * Load a course by ID. Returns cached CourseTime if already loaded (when no date filter),
    * otherwise creates and loads a new one.
@@ -44,25 +33,24 @@ export const CourseTimeService = {
     startDate?: string | null,
     endDate?: string | null
   ): Promise<CourseTime> {
-    const trimmedId = id.trim();
-    if (!trimmedId) throw new Error("Course ID is required");
+    if (!id) throw new Error("Course ID is required");
 
     const useCache = (startDate == null || startDate === "") && (endDate == null || endDate === "");
     const normalizedStart = startDate && startDate.trim() ? startDate.trim() : null;
     const normalizedEnd = endDate && endDate.trim() ? endDate.trim() : null;
 
     if (useCache) {
-      const cached = courseMap.get(trimmedId);
+      const cached = courseMap.get(id);
       if (cached) {
         return cached;
       }
     }
 
     const courseTime = new CourseTime();
-    await courseTime.loadCalendar(trimmedId, normalizedStart, normalizedEnd);
+    await courseTime.loadCalendar(id, normalizedStart, normalizedEnd);
 
     if (useCache) {
-      courseMap.set(trimmedId, courseTime);
+      courseMap.set(id, courseTime);
     }
 
     return courseTime;
@@ -78,39 +66,21 @@ export const CourseTimeService = {
     startDate?: string | null,
     endDate?: string | null
   ): Promise<StudentCalendar> {
-    const trimmedCourseId = courseId.trim();
-    const trimmedStudentId = studentId.trim();
+    if (!courseId) throw new Error("Course ID is required");
+    if (!studentId) throw new Error("Student ID is required");
 
-    if (!trimmedCourseId) throw new Error("Course ID is required");
-    if (!trimmedStudentId) throw new Error("Student ID is required");
-
-    const courseTime = await this.loadCourse(trimmedCourseId, startDate ?? null, endDate ?? null);
+    const displayInfo = await this.getStudentDisplayInfo(studentId);
+    const courseTime = await this.loadCourse(courseId, startDate ?? null, endDate ?? null);
     const course = courseTime.courseData;
 
-    if (!course) {
-      const avatarUrl = await getAvatarUrl(trimmedStudentId);
-      return {
-        courseid: trimmedCourseId,
-        courseTitle: trimmedCourseId,
-        studentid: trimmedStudentId,
-        studentName: trimmedStudentId,
-        avatarUrl,
-        course: null,
-        calendarByWeek: null,
-        calendarByDay: null,
-        labsByLab: null,
-        labsByDay: null,
-        error: "Failed to load course data",
-        hasData: false
-      };
-    }
+    if (!course) throw new Error("Failed to load course data");
 
     const calModel = course.calendarModel;
     const labsModel = course.labsModel;
 
-    const studentCalRowWeek = calModel.week.rows.find((r) => r.studentid === trimmedStudentId) ?? null;
-    const studentCalRowDay = calModel.day.rows.find((r) => r.studentid === trimmedStudentId) ?? null;
-    const studentName = studentCalRowWeek?.full_name ?? trimmedStudentId;
+    const studentCalRowWeek = calModel.week.rows.find((r) => r.studentid === studentId) ?? null;
+    const studentCalRowDay = calModel.day.rows.find((r) => r.studentid === studentId) ?? null;
+    const studentName = studentCalRowWeek?.full_name ?? displayInfo.studentName;
 
     const dates =
       calModel.day.columnDefs
@@ -128,7 +98,7 @@ export const CourseTimeService = {
         .filter((f) => f && f !== "studentid" && f !== "full_name" && f !== "totalMinutes") ?? [];
 
     const studentLabRow =
-      labsModel.lab.rows.find((r) => r.studentid === trimmedStudentId) ??
+      labsModel.lab.rows.find((r) => r.studentid === studentId) ??
       labsModel.lab.rows.find((r) => r.studentid === studentName) ??
       null;
 
@@ -136,7 +106,7 @@ export const CourseTimeService = {
       dates.length > 0 && course.learningRecords.length > 0
         ? buildLabRowByDay(
             course.learningRecords,
-            trimmedStudentId,
+            studentId,
             dates,
             studentName
           )
@@ -150,8 +120,6 @@ export const CourseTimeService = {
     const hasCalData = (studentCalRowWeek != null || studentCalRowDay != null) && calModel.hasData;
     const hasLabData = studentLabRow != null && labsModel.hasData;
 
-    const avatarUrl = await getAvatarUrl(trimmedStudentId);
-
     const courseWithMedians: CourseCalendar = {
       ...course,
       labsMedianByDay,
@@ -163,9 +131,9 @@ export const CourseTimeService = {
     return {
       courseid: course.id,
       courseTitle: course.title,
-      studentid: trimmedStudentId,
+      studentid: studentId,
       studentName,
-      avatarUrl,
+      avatarUrl: displayInfo.avatarUrl,
       course: courseWithMedians,
       calendarByWeek: studentCalRowWeek,
       calendarByDay: studentCalRowDay,

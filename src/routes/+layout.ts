@@ -1,6 +1,6 @@
 import type { LayoutLoad } from "./$types";
 import { CourseTime } from "$lib/services/CourseTime";
-import { getStudentDisplayInfo } from "$lib/services/CourseTimeService";
+import { CourseTimeService } from "$lib/services/CourseTimeService";
 
 /** Derive a human-readable view type from the current pathname. */
 function getViewType(pathname: string): string {
@@ -59,7 +59,7 @@ export const load: LayoutLoad = async ({ url }) => {
   if (isStudentRoute && courseId.trim()) {
     const studentId = segments[1] ?? "";
     try {
-      const info = await getStudentDisplayInfo(studentId);
+      const info = await CourseTimeService.getStudentDisplayInfo(studentId);
       studentName = info.studentName;
       avatarUrl = info.avatarUrl;
     } catch {
