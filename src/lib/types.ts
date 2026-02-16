@@ -97,16 +97,6 @@ export type CourseCalendar = {
   labColumns?: string[];
 };
 
-/** CourseTime instance – loaded course data and loadCalendar method */
-export interface CourseTimeInstance {
-  courseData: CourseCalendar | null;
-  loadCalendar(
-    courseId: string,
-    startDate: string | null,
-    endDate: string | null,
-    title: string
-  ): Promise<CourseCalendar>;
-}
 
 // Single-student calendar view for a given course (extracted from CourseTime)
 export type StudentCalendar = {
