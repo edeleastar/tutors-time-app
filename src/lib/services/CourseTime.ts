@@ -23,10 +23,10 @@ export class CourseTime implements TutorsTimeCourse {
   labsModel!: LabsModel;
 
   /**
-   * Load calendar data for a single course and date range.
+   * Load time data for a single course and date range.
    * Populates this instance with course data and returns this.
    */
-  async loadCalendar(
+  async loadTime(
     courseId: string,
     startDate: string | null,
     endDate: string | null,

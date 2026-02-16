@@ -83,9 +83,9 @@ export type TutorsTimeCourse = {
   learningRecords: LearningRecord[];
   learningRecordsLoading: boolean;
   learningRecordsError: string | null;
-  /** Prepared day/week/summary views for calendar grids. Initialised in loadCalendar. */
+  /** Prepared day/week/summary views for calendar grids. Initialised in loadTime. */
   calendarModel: CalendarModel;
-  /** Prepared lab/step views for LabsGrid. Initialised in loadCalendar. */
+  /** Prepared lab/step views for LabsGrid. Initialised in loadTime. */
   labsModel: LabsModel;
   /** Lab median by day (from learning records). Set when dates available (e.g. in student view). */
   labsMedianByDay?: LabMedianRow | null;
@@ -95,8 +95,8 @@ export type TutorsTimeCourse = {
   dates?: string[];
   /** Lab column names (from labsModel.lab). Set in student view. */
   labColumns?: string[];
-  /** Load calendar data for a course and date range. Populates instance and returns it. */
-  loadCalendar?(
+  /** Load time data for a course and date range. Populates instance and returns it. */
+  loadTime?(
     courseId: string,
     startDate: string | null,
     endDate: string | null,
@@ -135,12 +135,12 @@ export type TutorsTimeStudent = {
 export interface TutorsTimeService {
   getStudentDisplayInfo(studentId: string): Promise<StudentDisplayInfo>;
   getCourseDisplayInfo(courseId: string): Promise<CourseDisplayInfo>;
-  loadCourseCalendar(
+  loadCourseTime(
     id: string,
     startDate?: string | null,
     endDate?: string | null
   ): Promise<TutorsTimeCourse>;
-  loadStudentCalendar(
+  loadStudentTime(
     courseId: string,
     studentId: string,
     startDate?: string | null,

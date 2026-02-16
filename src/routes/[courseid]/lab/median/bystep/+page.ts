@@ -5,6 +5,6 @@ export async function load({ params }: { params: Record<string, string> }) {
   if (!courseId) {
     return { course: null };
   }
-  const courseTime = await CourseTimeService.loadCourseCalendar(courseId);
+  const courseTime = await CourseTimeService.loadCourseTime(courseId);
   return { course: courseTime };
 }

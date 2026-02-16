@@ -75,7 +75,7 @@ export const CourseTimeService: TutorsTimeService = {
    * otherwise creates and loads a new one.
    * Caching only applies when both startDate and endDate are null/undefined.
    */
-  async loadCourseCalendar(
+  async loadCourseTime(
     id: string,
     startDate?: string | null,
     endDate?: string | null
@@ -95,7 +95,7 @@ export const CourseTimeService: TutorsTimeService = {
 
     const { title } = await this.getCourseDisplayInfo(id);
     const courseTime = new CourseTime();
-    await courseTime.loadCalendar(id, normalizedStart, normalizedEnd, title);
+    await courseTime.loadTime(id, normalizedStart, normalizedEnd, title);
 
     if (useCache) {
       courseMap.set(id, courseTime);
@@ -106,9 +106,9 @@ export const CourseTimeService: TutorsTimeService = {
 
   /**
    * Load calendar data for a single student within a course.
-   * Calls loadCourseCalendar to get CourseTime, then extracts student-specific data from the model.
+   * Calls loadCourseTime to get CourseTime, then extracts student-specific data from the model.
    */
-  async loadStudentCalendar(
+  async loadStudentTime(
     courseId: string,
     studentId: string,
     startDate?: string | null,
@@ -118,7 +118,7 @@ export const CourseTimeService: TutorsTimeService = {
     if (!studentId) throw new Error("Student ID is required");
 
     const displayInfo = await this.getStudentDisplayInfo(studentId);
-    const courseTime = await this.loadCourseCalendar(courseId, startDate ?? null, endDate ?? null);
+    const courseTime = await this.loadCourseTime(courseId, startDate ?? null, endDate ?? null);
     const course = courseTime;
 
     const calModel = course.calendarModel;
