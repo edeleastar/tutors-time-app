@@ -43,6 +43,19 @@ export interface TutorsConnectUser {
   date_last_accessed: string | null; // timestamptz (ISO string)
 }
 
+/** Return type of CourseTimeService.getStudentDisplayInfo */
+export type StudentDisplayInfo = {
+  studentName: string;
+  avatarUrl: string | null;
+};
+
+/** Return type of CourseTimeService.getCourseDisplayInfo */
+export type CourseDisplayInfo = {
+  title: string;
+  img: string | null;
+  icon: { type: string; color: string | null } | null;
+};
+
 // Supabase `learning_records` table model (full_name added during enrichment)
 export interface LearningRecord {
   course_id: string; // text not null
@@ -83,6 +96,17 @@ export type CourseCalendar = {
   /** Lab column names (from labsModel.lab). Set in student view. */
   labColumns?: string[];
 };
+
+/** CourseTime instance – loaded course data and loadCalendar method */
+export interface CourseTimeInstance {
+  courseData: CourseCalendar | null;
+  loadCalendar(
+    courseId: string,
+    startDate: string | null,
+    endDate: string | null,
+    title: string
+  ): Promise<CourseCalendar>;
+}
 
 // Single-student calendar view for a given course (extracted from CourseTime)
 export type StudentCalendar = {

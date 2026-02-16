@@ -1,15 +1,19 @@
 import { CourseTime } from "./CourseTime";
 import { getSupabase } from "./supabase";
-import type { StudentCalendar, CourseCalendar } from "../types";
+import type {
+  StudentCalendar,
+  CourseCalendar,
+  StudentDisplayInfo,
+  CourseDisplayInfo,
+  TutorsConnectCourse
+} from "../types";
 import { buildLabRowByDay, buildMedianByDay } from "$lib/components/labs/labUtils";
 
 const courseMap = new Map<string, CourseTime>();
 
 export const CourseTimeService = {
   /** Fetch student display name and avatar for app bar (used when on student route). */
-  async getStudentDisplayInfo(
-    studentId: string
-  ): Promise<{ studentName: string; avatarUrl: string | null }> {
+  async getStudentDisplayInfo(studentId: string): Promise<StudentDisplayInfo> {
     const supabase = getSupabase();
     const { data } = await supabase
       .from("tutors-connect-users")
@@ -21,6 +25,48 @@ export const CourseTimeService = {
       row?.full_name && String(row.full_name).trim().length > 0 ? String(row.full_name).trim() : studentId.trim();
     const avatarUrl = row?.avatar_url ?? null;
     return { studentName, avatarUrl };
+  },
+
+  /** Return display title, image or icon for a course (for AppBar). */
+  async getCourseDisplayInfo(courseId: string): Promise<CourseDisplayInfo> {
+    const supabase = getSupabase();
+    const { data, error } = await supabase
+      .from("tutors-connect-courses")
+      .select("course_id, course_record")
+      .eq("course_id", courseId)
+      .maybeSingle();
+
+    if (error || !data) {
+      return { title: courseId, img: null, icon: null };
+    }
+
+    const row = data as TutorsConnectCourse;
+    const id = row.course_id?.trim() || courseId;
+    const record = row.course_record;
+    const title =
+      record?.title && String(record.title).trim().length > 0
+        ? String(record.title).trim()
+        : id;
+    const img =
+      record?.img != null && String(record.img).trim().length > 0
+        ? String(record.img).trim()
+        : null;
+    const rawIcon = record?.icon;
+    const icon =
+      rawIcon != null &&
+      typeof rawIcon === "object" &&
+      typeof (rawIcon as { type?: unknown }).type === "string" &&
+      String((rawIcon as { type: string }).type).trim().length > 0
+        ? {
+            type: String((rawIcon as { type: string }).type).trim(),
+            color:
+              typeof (rawIcon as { color?: unknown }).color === "string" &&
+              String((rawIcon as { color: string }).color).trim().length > 0
+                ? String((rawIcon as { color: string }).color).trim()
+                : null
+          }
+        : null;
+    return { title, img, icon };
   },
 
   /**
@@ -46,8 +92,9 @@ export const CourseTimeService = {
       }
     }
 
+    const { title } = await this.getCourseDisplayInfo(id);
     const courseTime = new CourseTime();
-    await courseTime.loadCalendar(id, normalizedStart, normalizedEnd);
+    await courseTime.loadCalendar(id, normalizedStart, normalizedEnd, title);
 
     if (useCache) {
       courseMap.set(id, courseTime);
