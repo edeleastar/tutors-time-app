@@ -19,7 +19,7 @@
 
 <section class="p-2 h-[calc(100vh-4rem)] flex flex-col min-h-0 overflow-y-auto">
   <!-- Heatmaps: full width, stacked above tables (both in scroll flow) -->
-  {#if data.studentCalendar && (data.studentCalendar. course?.dates?.length ?? 0) > 0}
+  {#if data.studentCalendar && (data.studentCalendar.course?.dates?.length ?? 0) > 0}
     <section class="heatmap-full-width shrink-0 py-4 -mx-2 w-[calc(100%+1rem)] min-w-0 space-y-6">
       {#if data.studentCalendar.calendarByDay}
         <div class="px-4">
