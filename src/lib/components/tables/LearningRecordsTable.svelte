@@ -18,7 +18,7 @@
     }
     try {
       const courseTime = await CourseTimeService.loadCourse(id);
-      course = courseTime.courseData;
+      course = courseTime;
       error = course?.learningRecordsError ?? null;
     } catch (e) {
       error = e instanceof Error ? e.message : "Failed to load learning records";

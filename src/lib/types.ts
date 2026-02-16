@@ -95,6 +95,13 @@ export type CourseCalendar = {
   dates?: string[];
   /** Lab column names (from labsModel.lab). Set in student view. */
   labColumns?: string[];
+  /** Load calendar data for a course and date range. Populates instance and returns it. */
+  loadCalendar?(
+    courseId: string,
+    startDate: string | null,
+    endDate: string | null,
+    title: string
+  ): Promise<CourseCalendar>;
 };
 
 

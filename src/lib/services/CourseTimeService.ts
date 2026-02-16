@@ -118,9 +118,7 @@ export const CourseTimeService = {
 
     const displayInfo = await this.getStudentDisplayInfo(studentId);
     const courseTime = await this.loadCourse(courseId, startDate ?? null, endDate ?? null);
-    const course = courseTime.courseData;
-
-    if (!course) throw new Error("Failed to load course data");
+    const course = courseTime;
 
     const calModel = course.calendarModel;
     const labsModel = course.labsModel;

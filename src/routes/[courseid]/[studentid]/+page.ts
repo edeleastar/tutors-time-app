@@ -15,5 +15,5 @@ export async function load({ params }: { params: Record<string, string> }) {
       null
     );
 
-  return { course: courseTime.courseData, studentCalendar: studentCalendar };
+  return { course: courseTime, studentCalendar: studentCalendar };
 }

@@ -10,13 +10,21 @@ import { LabsModel } from "$lib/components/labs/LabsModel";
 import { getSupabase } from "./supabase";
 import type { TutorsConnectUser } from "$lib/types";
 
-export class CourseTime  {
-  /** Loaded calendar data for the current course. Updated when loadCalendar is called. */
-  courseData: CourseCalendar | null = null;
+export class CourseTime implements CourseCalendar {
+  id = "";
+  title = "";
+  data: CalendarEntry[] = [];
+  loading = false;
+  error: string | null = null;
+  learningRecords: LearningRecord[] = [];
+  learningRecordsLoading = false;
+  learningRecordsError: string | null = null;
+  calendarModel!: CalendarModel;
+  labsModel!: LabsModel;
 
   /**
    * Load calendar data for a single course and date range.
-   * Stores the result in courseData and returns it.
+   * Populates this instance with course data and returns this.
    */
   async loadCalendar(
     courseId: string,
@@ -26,8 +34,6 @@ export class CourseTime  {
   ): Promise<CourseCalendar> {
     const id = courseId.trim();
     if (!id) throw new Error("Course ID is required");
-
-    let course: CourseCalendar;
 
     try {
       const rawData = await CourseTime.getCalendarData(id);
@@ -41,36 +47,31 @@ export class CourseTime  {
         learningRecordsError = e instanceof Error ? e.message : "Failed to load learning records";
       }
 
-      course = {
-        id,
-        title,
-        data: filteredData,
-        loading: false,
-        error: null,
-        learningRecords,
-        learningRecordsLoading: false,
-        learningRecordsError,
-        calendarModel: new CalendarModel(filteredData, false, null),
-        labsModel: new LabsModel(learningRecords, false, learningRecordsError)
-      };
+      this.id = id;
+      this.title = title;
+      this.data = filteredData;
+      this.loading = false;
+      this.error = null;
+      this.learningRecords = learningRecords;
+      this.learningRecordsLoading = false;
+      this.learningRecordsError = learningRecordsError;
+      this.calendarModel = new CalendarModel(filteredData, false, null);
+      this.labsModel = new LabsModel(learningRecords, false, learningRecordsError);
     } catch (e) {
       const msg = e instanceof Error ? e.message : "Failed to load calendar data";
-      course = {
-        id,
-        title,
-        data: [],
-        loading: false,
-        error: msg,
-        learningRecords: [],
-        learningRecordsLoading: false,
-        learningRecordsError: msg,
-        calendarModel: new CalendarModel([], false, msg),
-        labsModel: new LabsModel([], false, msg)
-      };
+      this.id = id;
+      this.title = title;
+      this.data = [];
+      this.loading = false;
+      this.error = msg;
+      this.learningRecords = [];
+      this.learningRecordsLoading = false;
+      this.learningRecordsError = msg;
+      this.calendarModel = new CalendarModel([], false, msg);
+      this.labsModel = new LabsModel([], false, msg);
     }
 
-    this.courseData = course;
-    return course;
+    return this;
   }
 
   /**
