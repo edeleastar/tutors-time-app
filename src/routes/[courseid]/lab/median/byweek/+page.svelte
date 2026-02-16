@@ -1,10 +1,12 @@
 <script lang="ts">
   import LabsMedianComponent from "$lib/components/labs/LabsMedianComponent.svelte";
-  import { page } from "$app/stores";
+  import type { CourseCalendar } from "$lib/types";
 
-  const courseId = $derived(($page.params.courseid as string) ?? "");
+  interface Props {
+    data: { course: CourseCalendar | null };
+  }
+
+  let { data }: Props = $props();
 </script>
 
-{#key courseId}
-  <LabsMedianComponent courseId={courseId} mode="week" />
-{/key}
+<LabsMedianComponent course={data.course} mode="week" />
