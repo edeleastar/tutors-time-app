@@ -1,6 +1,5 @@
 import type { ColDef } from "ag-grid-community";
-import type { CalendarModel } from "$lib/types";
-import type { CalendarRow, CalendarMedianRow } from "$lib/types";
+import type { CalendarModel, CalendarRow, CalendarMedianRow } from "$lib/services/types";
 import {
   formatDateShort,
   formatTimeMinutesOnly,

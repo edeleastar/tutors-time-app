@@ -1,6 +1,5 @@
 import type { ColDef, ICellRendererParams } from "ag-grid-community";
-import type { LabModel } from "$lib/types";
-import type { LabRow, LabMedianRow } from "$lib/types";
+import type { LabModel, LabRow, LabMedianRow } from "$lib/services/types";
 import {
   cellColorForMinutes,
   formatTimeMinutesOnly,

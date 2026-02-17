@@ -220,6 +220,3 @@ export interface TutorsTimeService {
     endDate?: string | null
   ): Promise<TutorsTimeStudent>;
 }
-
-
-

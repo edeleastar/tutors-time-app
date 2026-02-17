@@ -1,5 +1,5 @@
 <script lang="ts">
-  import type { LabRow, LabMedianRow } from "$lib/types";
+  import type { LabRow, LabMedianRow } from "$lib/services/types";
   import { extractLabIdentifier } from "$lib/services/utils";
   import { formatTimeMinutesOnly, cellColorForMinutes } from "$lib/services/utils";
 

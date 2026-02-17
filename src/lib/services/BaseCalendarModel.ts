@@ -5,7 +5,7 @@ import type {
   CalendarModel,
   CalendarTable,
   CalendarMedianTable
-} from "$lib/types";
+} from "$lib/services/types";
 import {
   getDistinctSortedWeeks,
   getDistinctSortedDates,
@@ -13,7 +13,7 @@ import {
   type ViewMode
 } from "$lib/services/utils";
 
-export type { CalendarTable, CalendarMedianTable } from "$lib/types";
+export type { CalendarTable, CalendarMedianTable } from "$lib/services/types";
 
 /**
  * Calendar data prepared for CalendarGrid and CalendarMedianGrid.

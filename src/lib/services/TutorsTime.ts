@@ -7,7 +7,7 @@ import type {
   CourseDisplayInfo,
   TutorsConnectCourse,
   TutorsTimeService
-} from "../types";
+} from "./types";
 import { BaseLabModel } from "$lib/services/BaseLabModel";
 
 const courseMap = new Map<string, CourseTime>();

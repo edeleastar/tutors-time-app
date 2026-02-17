@@ -5,12 +5,12 @@ import type {
   CalendarEntryBase,
   CalendarModel,
   LabModel
-} from "../types";
+} from "./types";
 import { BaseCalendarModel } from "$lib/services/BaseCalendarModel";
 import { filterByDateRange } from "$lib/services/utils";
 import { BaseLabModel } from "$lib/services/BaseLabModel";
 import { getSupabase } from "./supabase";
-import type { TutorsConnectUser } from "$lib/types";
+import type { TutorsConnectUser } from "$lib/services/types";
 
 export class CourseTime implements TutorsTimeCourse {
   id = "";
