@@ -1,8 +1,8 @@
 <script lang="ts">
   import { createGrid, ModuleRegistry, AllCommunityModule } from "ag-grid-community";
   import type { GridApi } from "ag-grid-community";
-  import type { CalendarModel } from "$lib/components/calendar/CalendarModel";
-  import type { CalendarMedianRow } from "$lib/components/calendar/calendarUtils";
+  import { GridCalendarModel } from "$lib/components/calendar/GridCalendarModel";
+  import type { CalendarMedianRow } from "$lib/types";
   import type { TutorsTimeCourse } from "$lib/types";
 
   ModuleRegistry.registerModules([AllCommunityModule]);
@@ -16,7 +16,9 @@
 
   let { course, mode }: Props = $props();
 
-  const model = $derived(course?.calendarModel);
+  const model = $derived(
+    course?.calendarModel ? new GridCalendarModel(course.calendarModel) : null
+  );
   const title = $derived(mode === "week" ? "Median by week" : "Median by day");
   const courseError = $derived(course?.error ?? null);
 

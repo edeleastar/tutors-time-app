@@ -1,8 +1,8 @@
 <script lang="ts">
   import { createGrid, ModuleRegistry, AllCommunityModule } from "ag-grid-community";
-  import type { GridApi } from "ag-grid-community";
-  import type { CalendarModel } from "$lib/components/calendar/CalendarModel";
-  import type { CalendarRow, CalendarMedianRow } from "$lib/components/calendar/calendarUtils";
+  import type { ColDef, GridApi } from "ag-grid-community";
+  import { GridCalendarModel } from "$lib/components/calendar/GridCalendarModel";
+  import type { CalendarRow, CalendarMedianRow } from "$lib/types";
   import type { TutorsTimeCourse } from "$lib/types";
 
   ModuleRegistry.registerModules([AllCommunityModule]);
@@ -23,7 +23,9 @@
 
   let { course, mode, variant = "detail", includeMedianRow = false, studentId = null }: Props = $props();
 
-  const model = $derived(course?.calendarModel);
+  const model = $derived(
+    course?.calendarModel ? new GridCalendarModel(course.calendarModel) : null
+  );
   const title = $derived(mode === "week" ? "Calendar by week" : "Calendar by day");
   const courseError = $derived(course?.error ?? null);
 
@@ -44,7 +46,7 @@
   /** Strip sort from columns when includeMedianRow so blank row stays between student and median. */
   const columnDefs = $derived(
     includeMedianRow && mode === "week"
-      ? baseColumnDefs.map((col) => ({ ...col, sort: undefined }))
+      ? baseColumnDefs.map((col) => ({ ...col, sort: undefined } as typeof col))
       : baseColumnDefs
   );
 
@@ -106,8 +108,8 @@
     const container = gridContainer;
     if (!container || !model) return;
     const api = createGrid<GridRow>(container, {
-      columnDefs: columnDefs as any,
-      rowData: rowData as any,
+      columnDefs: columnDefs as ColDef<GridRow>[],
+      rowData,
       loading: model.loading,
       defaultColDef: { sortable: true, resizable: true },
       domLayout: "normal",
@@ -126,8 +128,8 @@
   $effect(() => {
     const api = gridApi;
     if (api && model) {
-      api.setGridOption("columnDefs", columnDefs as any);
-      api.setGridOption("rowData", rowData as any);
+      api.setGridOption("columnDefs", columnDefs as ColDef<GridRow>[]);
+      api.setGridOption("rowData", rowData);
       api.setGridOption("loading", model.loading);
     }
   });

@@ -11,6 +11,43 @@ export interface CalendarEntry extends CalendarEntryBase {
   full_name: string; // display name from TutorsConnectUser (falls back to studentid when missing)
 }
 
+/** Pivoted per-student row for calendar grids (day/week view). */
+export type CalendarRow = {
+  courseid: string;
+  studentid: string;
+  full_name: string;
+  totalSeconds: number;
+  [key: string]: string | number;
+};
+
+/** Median row for calendar grids (one row with medians per date or week). */
+export type CalendarMedianRow = { courseid: string; totalSeconds: number; [key: string]: string | number };
+
+/** Prepared rows for the day/week calendar grid (pivoted per student). */
+export type CalendarTable = {
+  rows: CalendarRow[];
+};
+
+/** Prepared row for the median grid (medians per date or week). */
+export type CalendarMedianTable = {
+  row: CalendarMedianRow | null;
+};
+
+/** Calendar model interface for course/student views. */
+export interface CalendarModel {
+  readonly day: CalendarTable;
+  readonly week: CalendarTable;
+  readonly medianByDay: CalendarMedianTable;
+  readonly medianByWeek: CalendarMedianTable;
+  readonly weeks: string[];
+  readonly dates: string[];
+  readonly loading: boolean;
+  readonly error: string | null;
+  readonly hasData: boolean;
+  readonly hasMedianByDay: boolean;
+  readonly hasMedianByWeek: boolean;
+}
+
 // Supabase `tutors-connect-courses` table model
 // create table public."tutors-connect-courses" (
 //   course_id text not null,
@@ -68,9 +105,7 @@ export interface LearningRecord {
   type: string | null; // text null
 }
 
-import type { CalendarModel } from "$lib/components/calendar/CalendarModel";
 import type { LabsModel } from "$lib/components/labs/LabsModel";
-import type { CalendarRow, CalendarMedianRow } from "$lib/components/calendar/calendarUtils";
 import type { LabRow, LabMedianRow } from "$lib/components/labs/labUtils";
 
 // Aggregated per-course calendar view used by the grids

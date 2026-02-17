@@ -1,5 +1,5 @@
 <script lang="ts">
-  import type { CalendarRow, CalendarMedianRow } from "$lib/components/calendar/calendarUtils";
+  import type { CalendarRow, CalendarMedianRow } from "$lib/types";
   import { formatDateShort, formatTimeMinutesOnly, cellColorForMinutes } from "$lib/components/calendar/calendarUtils";
 
   interface Props {

@@ -128,15 +128,8 @@ export const TutorsTime: TutorsTimeService = {
     const studentCalRowDay = calModel.day.rows.find((r) => r.studentid === studentId) ?? null;
     const studentName = studentCalRowWeek?.full_name ?? displayInfo.studentName;
 
-    const dates =
-      calModel.day.columnDefs
-        ?.map((c) => c.field as string)
-        .filter((f) => f && f !== "full_name" && f !== "studentid" && f !== "totalSeconds") ?? [];
-
-    const weeks =
-      calModel.week.columnDefs
-        ?.map((c) => c.field as string)
-        .filter((f) => f && f !== "full_name" && f !== "studentid" && f !== "totalSeconds") ?? [];
+    const dates = calModel.dates ?? [];
+    const weeks = calModel.weeks ?? [];
 
     const labColumns =
       labsModel.lab.columnDefs
