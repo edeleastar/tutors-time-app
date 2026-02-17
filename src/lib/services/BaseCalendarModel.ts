@@ -11,7 +11,7 @@ import {
   getDistinctSortedDates,
   getMondayForDate,
   type ViewMode
-} from "$lib/services/calendarUtils";
+} from "$lib/services/utils";
 
 export type { CalendarTable, CalendarMedianTable } from "$lib/types";
 

@@ -1,8 +1,8 @@
 <script lang="ts">
   import { createGrid, ModuleRegistry, AllCommunityModule } from "ag-grid-community";
   import type { GridApi } from "ag-grid-community";
-  import type { LabsModel } from "$lib/components/labs/LabsModel";
-  import type { LabMedianRow } from "$lib/components/labs/labUtils";
+  import { GridLabModel } from "$lib/components/labs/GridLabModel";
+  import type { LabMedianRow } from "$lib/types";
   import type { TutorsTimeCourse } from "$lib/types";
 
   ModuleRegistry.registerModules([AllCommunityModule]);
@@ -16,15 +16,15 @@
 
   let { course, mode }: Props = $props();
 
-  const model = $derived(course?.labsModel);
+  const gridModel = $derived(course?.labsModel ? new GridLabModel(course.labsModel) : null);
   const title = $derived(mode === "week" ? "Median lab by week" : "Median lab by step");
   const courseError = $derived(course?.error ?? null);
 
-  const columnDefs = $derived(!model ? [] : mode === "day" ? model.medianByLabStep.columnDefs : model.medianByLab.columnDefs);
-  const row = $derived(!model ? null : mode === "day" ? model.medianByLabStep.row : model.medianByLab.row);
+  const columnDefs = $derived(!gridModel ? [] : mode === "day" ? gridModel.medianByLabStep.columnDefs : gridModel.medianByLab.columnDefs);
+  const row = $derived(!gridModel ? null : mode === "day" ? gridModel.medianByLabStep.row : gridModel.medianByLab.row);
   const rowData = $derived(row ? [row] : []);
-  const hasData = $derived(model?.hasData ?? false);
-  const hasMedianRow = $derived(!model ? false : mode === "day" ? model.hasMedianByLabStep : model.hasMedianByLab);
+  const hasData = $derived(gridModel?.hasData ?? false);
+  const hasMedianRow = $derived(!gridModel ? false : mode === "day" ? gridModel.hasMedianByLabStep : gridModel.hasMedianByLab);
   const ariaLabel = $derived(mode === "day" ? "Lab median by step" : "Lab median by week");
 
   let gridContainer = $state<HTMLDivElement | null>(null);
@@ -32,11 +32,11 @@
 
   $effect(() => {
     const container = gridContainer;
-    if (!container || !model) return;
+    if (!container || !gridModel) return;
     const api = createGrid<LabMedianRow>(container, {
       columnDefs,
       rowData,
-      loading: model.loading,
+      loading: gridModel.loading,
       defaultColDef: { sortable: true, resizable: true },
       domLayout: "normal",
       suppressNoRowsOverlay: false,
@@ -53,10 +53,10 @@
 
   $effect(() => {
     const api = gridApi;
-    if (api && model) {
+    if (api && gridModel) {
       api.setGridOption("columnDefs", columnDefs);
       api.setGridOption("rowData", rowData);
-      api.setGridOption("loading", model.loading);
+      api.setGridOption("loading", gridModel.loading);
     }
   });
 </script>
@@ -85,10 +85,10 @@
       {:else}
         <div class="flex-1 min-h-0 flex flex-col">
           <div class="flex-1 min-h-0">
-            {#if model?.error}
+            {#if gridModel?.error}
               <div class="card preset-filled-error-500 p-4">
                 <p class="font-bold">Error loading lab data</p>
-                <p class="text-sm">{model.error}</p>
+                <p class="text-sm">{gridModel.error}</p>
               </div>
             {:else}
               <div class="flex h-full flex-col gap-2">

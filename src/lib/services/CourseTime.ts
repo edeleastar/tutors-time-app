@@ -3,11 +3,12 @@ import type {
   LearningRecord,
   CalendarEntry,
   CalendarEntryBase,
-  CalendarModel
+  CalendarModel,
+  LabModel
 } from "../types";
 import { BaseCalendarModel } from "$lib/services/BaseCalendarModel";
-import { filterByDateRange } from "$lib/services/calendarUtils";
-import { LabsModel } from "$lib/components/labs/LabsModel";
+import { filterByDateRange } from "$lib/services/utils";
+import { BaseLabModel } from "$lib/services/BaseLabModel";
 import { getSupabase } from "./supabase";
 import type { TutorsConnectUser } from "$lib/types";
 
@@ -21,7 +22,7 @@ export class CourseTime implements TutorsTimeCourse {
   learningRecordsLoading = false;
   learningRecordsError: string | null = null;
   calendarModel!: CalendarModel;
-  labsModel!: LabsModel;
+  labsModel!: LabModel;
 
   /**
    * Load time data for a single course and date range.
@@ -57,7 +58,7 @@ export class CourseTime implements TutorsTimeCourse {
       this.learningRecordsLoading = false;
       this.learningRecordsError = learningRecordsError;
       this.calendarModel = new BaseCalendarModel(filteredData, false, null);
-      this.labsModel = new LabsModel(learningRecords, false, learningRecordsError);
+      this.labsModel = new BaseLabModel(learningRecords, false, learningRecordsError);
     } catch (e) {
       throw new Error("Failed to load calendar data");
     }

@@ -8,7 +8,7 @@ import type {
   TutorsConnectCourse,
   TutorsTimeService
 } from "../types";
-import { buildLabRowByDay, buildMedianByDay } from "$lib/components/labs/labUtils";
+import { BaseLabModel } from "$lib/services/BaseLabModel";
 
 const courseMap = new Map<string, CourseTime>();
 
@@ -131,10 +131,7 @@ export const TutorsTime: TutorsTimeService = {
     const dates = calModel.dates ?? [];
     const weeks = calModel.weeks ?? [];
 
-    const labColumns =
-      labsModel.lab.columnDefs
-        ?.map((c) => c.field as string)
-        .filter((f) => f && f !== "studentid" && f !== "full_name" && f !== "totalMinutes") ?? [];
+    const labColumns = labsModel.labs;
 
     const studentLabRow =
       labsModel.lab.rows.find((r) => r.studentid === studentId) ??
@@ -143,7 +140,7 @@ export const TutorsTime: TutorsTimeService = {
 
     const labsByDay =
       dates.length > 0 && course.learningRecords.length > 0
-        ? buildLabRowByDay(
+        ? BaseLabModel.buildLabRowByDay(
             course.learningRecords,
             studentId,
             dates,
@@ -153,7 +150,7 @@ export const TutorsTime: TutorsTimeService = {
 
     const labsMedianByDay =
       dates.length > 0 && course.learningRecords.length > 0
-        ? buildMedianByDay(course.learningRecords, course.id, dates)
+        ? BaseLabModel.buildMedianByDay(course.learningRecords, course.id, dates)
         : null;
 
     const hasCalData = (studentCalRowWeek != null || studentCalRowDay != null) && calModel.hasData;

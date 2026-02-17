@@ -105,8 +105,46 @@ export interface LearningRecord {
   type: string | null; // text null
 }
 
-import type { LabsModel } from "$lib/components/labs/LabsModel";
-import type { LabRow, LabMedianRow } from "$lib/components/labs/labUtils";
+/** Pivoted row type for LabsGrid. */
+export type LabRow = {
+  studentid: string; // raw github_id (for links)
+  full_name: string; // display name (from enrichment)
+  totalMinutes: number;
+  [lo_id: string]: string | number;
+};
+
+/** Summary row type for labs median grid (one row, median values per lab or step). */
+export type LabMedianRow = {
+  courseid: string;
+  totalMinutes: number;
+  [key: string]: string | number;
+};
+
+/** Prepared rows for the lab/step grid (pivoted per student). */
+export type LabTable = {
+  rows: LabRow[];
+};
+
+/** Prepared row for the labs median grid (medians per lab or step). */
+export type LabMedianTable = {
+  row: LabMedianRow | null;
+};
+
+/** Lab model interface for course/student views. */
+export interface LabModel {
+  readonly lab: LabTable;
+  readonly step: LabTable;
+  readonly medianByLabStep: LabMedianTable;
+  readonly medianByLab: LabMedianTable;
+  readonly labs: string[];
+  readonly steps: string[];
+  readonly courseId: string;
+  readonly loading: boolean;
+  readonly error: string | null;
+  readonly hasData: boolean;
+  readonly hasMedianByLabStep: boolean;
+  readonly hasMedianByLab: boolean;
+}
 
 // Aggregated per-course calendar view used by the grids
 export type TutorsTimeCourse = {
@@ -121,14 +159,14 @@ export type TutorsTimeCourse = {
   /** Prepared day/week/summary views for calendar grids. Initialised in loadTime. */
   calendarModel: CalendarModel;
   /** Prepared lab/step views for LabsGrid. Initialised in loadTime. */
-  labsModel: LabsModel;
+  labsModel: LabModel;
   /** Lab median by day (from learning records). Set when dates available (e.g. in student view). */
   labsMedianByDay?: LabMedianRow | null;
   /** Week column names (from calendarModel.week). Set in student view. */
   weeks?: string[];
   /** Date column names (from calendarModel.day). Set in student view. */
   dates?: string[];
-  /** Lab column names (from labsModel.lab). Set in student view. */
+  /** Lab column names (from labsModel.labs). Set in student view. */
   labColumns?: string[];
   /** Load time data for a course and date range. Populates instance and returns it. */
   loadTime?(
