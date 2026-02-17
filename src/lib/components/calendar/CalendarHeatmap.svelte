@@ -34,6 +34,7 @@
       defaultView: "map",
       sideMenu: { enabled: false },
       title: { enabled: false, showConfigurationButton: false },
+      guide: { enabled: false },
       useLocalStorageForData: false,
       /** Color ranges in increments of 10 from 0 to 200 minutes */
       dynamicColorRange: {
