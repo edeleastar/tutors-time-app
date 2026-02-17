@@ -26,11 +26,9 @@ export class BaseCalendarModel implements CalendarModel {
   readonly medianByWeek: CalendarMedianTable;
   readonly weeks: string[];
   readonly dates: string[];
-  readonly loading: boolean;
   readonly error: string | null;
 
-  constructor(entries: CalendarEntry[], loading: boolean, error: string | null) {
-    this.loading = loading;
+  constructor(entries: CalendarEntry[], error: string | null) {
     this.error = error;
 
     this.weeks = getDistinctSortedWeeks(entries);
@@ -116,18 +114,6 @@ export class BaseCalendarModel implements CalendarModel {
         return row;
       });
     }
-  }
-
-  get hasData(): boolean {
-    return this.day.rows.length > 0;
-  }
-
-  get hasMedianByDay(): boolean {
-    return this.medianByDay.row != null;
-  }
-
-  get hasMedianByWeek(): boolean {
-    return this.medianByWeek.row != null;
   }
 
   private median(values: number[]): number {

@@ -19,11 +19,9 @@ export class BaseLabModel implements LabModel {
   readonly labs: string[];
   readonly steps: string[];
   readonly courseId: string;
-  readonly loading: boolean;
   readonly error: string | null;
 
-  constructor(records: LearningRecord[], loading: boolean, error: string | null) {
-    this.loading = loading;
+  constructor(records: LearningRecord[], error: string | null) {
     this.error = error;
 
     const filtered = this.filterAndSortRecords(records);
@@ -36,18 +34,6 @@ export class BaseLabModel implements LabModel {
     this.step = this.buildStepView(filtered);
     this.medianByLabStep = this.buildMedianByLabStepView(filtered);
     this.medianByLab = this.buildMedianByLabView(filtered);
-  }
-
-  get hasData(): boolean {
-    return this.lab.rows.length > 0;
-  }
-
-  get hasMedianByLabStep(): boolean {
-    return this.medianByLabStep.row != null;
-  }
-
-  get hasMedianByLab(): boolean {
-    return this.medianByLab.row != null;
   }
 
   /** Build a lab row for a single student with date keys (YYYY-MM-DD). Values in minutes. Use for lab activity heatmap by day. */

@@ -24,7 +24,9 @@
   const columnDefs = $derived(!model ? [] : mode === "day" ? model.medianByDay.columnDefs : model.medianByWeek.columnDefs);
   const row = $derived(!model ? null : mode === "day" ? model.medianByDay.row : model.medianByWeek.row);
   const rowData = $derived(row ? [row] : []);
-  const hasData = $derived(!model ? false : mode === "day" ? model.hasMedianByDay : model.hasMedianByWeek);
+  const hasData = $derived(
+    !model ? false : mode === "day" ? model.medianByDay.row != null : model.medianByWeek.row != null
+  );
   const ariaLabel = $derived(mode === "day" ? "Course median by day" : "Course median by week");
 
   let gridContainer = $state<HTMLDivElement | null>(null);
@@ -36,7 +38,7 @@
     const api = createGrid<CalendarMedianRow>(container, {
       columnDefs,
       rowData,
-      loading: model.loading,
+      loading: course?.loading ?? false,
       defaultColDef: { sortable: true, resizable: true },
       domLayout: "normal",
       suppressNoRowsOverlay: false,
@@ -56,7 +58,7 @@
     if (api && model) {
       api.setGridOption("columnDefs", columnDefs);
       api.setGridOption("rowData", rowData);
-      api.setGridOption("loading", model.loading);
+      api.setGridOption("loading", course?.loading ?? false);
     }
   });
 </script>

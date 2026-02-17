@@ -153,8 +153,8 @@ export const TutorsTime: TutorsTimeService = {
         ? BaseLabModel.buildMedianByDay(course.learningRecords, course.id, dates)
         : null;
 
-    const hasCalData = (studentCalRowWeek != null || studentCalRowDay != null) && calModel.hasData;
-    const hasLabData = studentLabRow != null && labsModel.hasData;
+    const hasCalData = (studentCalRowWeek != null || studentCalRowDay != null) && calModel.day.rows.length > 0;
+    const hasLabData = studentLabRow != null && labsModel.lab.rows.length > 0;
 
     const courseWithMedians: TutorsTimeCourse = {
       ...course,

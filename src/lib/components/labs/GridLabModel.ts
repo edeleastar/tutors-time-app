@@ -33,11 +33,9 @@ export class GridLabModel {
   readonly step: GridLabTable;
   readonly medianByLabStep: GridLabMedianTable;
   readonly medianByLab: GridLabMedianTable;
-  readonly loading: boolean;
   readonly error: string | null;
 
   constructor(model: LabModel) {
-    this.loading = model.loading;
     this.error = model.error;
     this.lab = {
       rows: model.lab.rows,
@@ -55,18 +53,6 @@ export class GridLabModel {
       row: model.medianByLab.row,
       columnDefs: this.buildMedianByLabColumnDefs(model)
     };
-  }
-
-  get hasData(): boolean {
-    return this.lab.rows.length > 0;
-  }
-
-  get hasMedianByLabStep(): boolean {
-    return this.medianByLabStep.row != null;
-  }
-
-  get hasMedianByLab(): boolean {
-    return this.medianByLab.row != null;
   }
 
   private buildTotalMinutesColumn<T>(field: string = "totalMinutes", headerName = "Total"): ColDef<T> {

@@ -28,11 +28,9 @@ export class GridCalendarModel {
   readonly week: GridCalendarTable;
   readonly medianByDay: GridCalendarMedianTable;
   readonly medianByWeek: GridCalendarMedianTable;
-  readonly loading: boolean;
   readonly error: string | null;
 
   constructor(model: CalendarModel) {
-    this.loading = model.loading;
     this.error = model.error;
     this.day = {
       rows: model.day.rows,
@@ -50,18 +48,6 @@ export class GridCalendarModel {
       row: model.medianByWeek.row,
       columnDefs: this.buildMedianByWeekColumnDefs(model)
     };
-  }
-
-  get hasData(): boolean {
-    return this.day.rows.length > 0;
-  }
-
-  get hasMedianByDay(): boolean {
-    return this.medianByDay.row != null;
-  }
-
-  get hasMedianByWeek(): boolean {
-    return this.medianByWeek.row != null;
   }
 
   private buildTotalSecondsColumn<T>(field: string = "totalSeconds", headerName = "Total"): ColDef<T> {

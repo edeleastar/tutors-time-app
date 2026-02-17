@@ -85,9 +85,9 @@
       ? false
       : isSummary
         ? mode === "day"
-          ? model.hasMedianByDay
-          : model.hasMedianByWeek
-        : model.hasData
+          ? model.medianByDay.row != null
+          : model.medianByWeek.row != null
+        : model.day.rows.length > 0
   );
 
   const ariaLabel = $derived(
@@ -109,7 +109,7 @@
     const api = createGrid<GridRow>(container, {
       columnDefs: columnDefs as ColDef<GridRow>[],
       rowData,
-      loading: model.loading,
+      loading: course?.loading ?? false,
       defaultColDef: { sortable: true, resizable: true },
       domLayout: "normal",
       suppressNoRowsOverlay: false,
@@ -129,7 +129,7 @@
     if (api && model) {
       api.setGridOption("columnDefs", columnDefs as ColDef<GridRow>[]);
       api.setGridOption("rowData", rowData);
-      api.setGridOption("loading", model.loading);
+      api.setGridOption("loading", course?.loading ?? false);
     }
   });
 </script>
@@ -151,7 +151,7 @@
           <p class="font-bold">Error loading calendar</p>
           <p class="text-sm">{courseError}</p>
         </div>
-      {:else if !model?.hasData}
+      {:else if !hasData}
         <div class="flex items-center justify-center flex-1">
           <p class="text-lg text-surface-600">No calendar data found for this course.</p>
         </div>

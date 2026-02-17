@@ -62,7 +62,7 @@
     const api = createGrid<LabRow>(container, {
       columnDefs,
       rowData: rows,
-      loading: gridModel.loading,
+      loading: course?.loading ?? false,
       defaultColDef: { sortable: true, resizable: true },
       domLayout: "normal",
       suppressNoRowsOverlay: false,
@@ -82,7 +82,7 @@
     if (api && gridModel) {
       api.setGridOption("columnDefs", columnDefs);
       api.setGridOption("rowData", rows);
-      api.setGridOption("loading", gridModel.loading);
+      api.setGridOption("loading", course?.loading ?? false);
     }
   });
 </script>
@@ -104,7 +104,7 @@
           <p class="font-bold">Error loading lab data</p>
           <p class="text-sm">{courseError}</p>
         </div>
-      {:else if !gridModel?.hasData}
+      {:else if !gridModel || gridModel.lab.rows.length === 0}
         <div class="flex items-center justify-center flex-1">
           <p class="text-lg text-surface-600">No lab data found for this course.</p>
         </div>

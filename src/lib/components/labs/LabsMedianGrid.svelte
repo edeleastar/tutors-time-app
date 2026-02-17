@@ -22,8 +22,9 @@
   const columnDefs = $derived(!gridModel ? [] : mode === "day" ? gridModel.medianByLabStep.columnDefs : gridModel.medianByLab.columnDefs);
   const row = $derived(!gridModel ? null : mode === "day" ? gridModel.medianByLabStep.row : gridModel.medianByLab.row);
   const rowData = $derived(row ? [row] : []);
-  const hasData = $derived(gridModel?.hasData ?? false);
-  const hasMedianRow = $derived(!gridModel ? false : mode === "day" ? gridModel.hasMedianByLabStep : gridModel.hasMedianByLab);
+  const hasMedianRow = $derived(
+    !gridModel ? false : mode === "day" ? gridModel.medianByLabStep.row != null : gridModel.medianByLab.row != null
+  );
   const ariaLabel = $derived(mode === "day" ? "Lab median by step" : "Lab median by week");
 
   let gridContainer = $state<HTMLDivElement | null>(null);
@@ -35,7 +36,7 @@
     const api = createGrid<LabMedianRow>(container, {
       columnDefs,
       rowData,
-      loading: gridModel.loading,
+      loading: course?.loading ?? false,
       defaultColDef: { sortable: true, resizable: true },
       domLayout: "normal",
       suppressNoRowsOverlay: false,
@@ -55,7 +56,7 @@
     if (api && gridModel) {
       api.setGridOption("columnDefs", columnDefs);
       api.setGridOption("rowData", rowData);
-      api.setGridOption("loading", gridModel.loading);
+      api.setGridOption("loading", course?.loading ?? false);
     }
   });
 </script>

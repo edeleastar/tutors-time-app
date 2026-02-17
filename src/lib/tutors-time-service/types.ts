@@ -1,13 +1,10 @@
-export interface CalendarEntryBase {
+/** Calendar entry used by the app. Raw DB rows omit full_name (enriched at load). */
+export interface CalendarEntry {
   id: string; // DATE as string (YYYY-MM-DD format)
   studentid: string; // raw student identifier (e.g. github_id)
   courseid: string;
   timeactive: number; // minutes (converted from 30-second blocks at load)
   pageloads: number; // BIGINT
-}
-
-// Enriched calendar entry used by the app (includes student full name).
-export interface CalendarEntry extends CalendarEntryBase {
   full_name: string; // display name from TutorsConnectUser (falls back to studentid when missing)
 }
 
@@ -41,21 +38,10 @@ export interface CalendarModel {
   readonly medianByWeek: CalendarMedianTable;
   readonly weeks: string[];
   readonly dates: string[];
-  readonly loading: boolean;
   readonly error: string | null;
-  readonly hasData: boolean;
-  readonly hasMedianByDay: boolean;
-  readonly hasMedianByWeek: boolean;
 }
 
 // Supabase `tutors-connect-courses` table model
-// create table public."tutors-connect-courses" (
-//   course_id text not null,
-//   visited_at timestamptz not null default now(),
-//   visit_count bigint null default 0,
-//   course_record json null,
-//   primary key (course_id)
-// )
 export interface TutorsConnectCourse {
   course_id: string;
   visited_at: string; // timestamptz not null (ISO string)
@@ -139,11 +125,7 @@ export interface LabModel {
   readonly labs: string[];
   readonly steps: string[];
   readonly courseId: string;
-  readonly loading: boolean;
   readonly error: string | null;
-  readonly hasData: boolean;
-  readonly hasMedianByLabStep: boolean;
-  readonly hasMedianByLab: boolean;
 }
 
 // Aggregated per-course calendar view used by the grids

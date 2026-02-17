@@ -2,7 +2,6 @@ import type {
   TutorsTimeCourse,
   LearningRecord,
   CalendarEntry,
-  CalendarEntryBase,
   CalendarModel,
   LabModel
 } from "./types";
@@ -57,8 +56,8 @@ export class CourseTime implements TutorsTimeCourse {
       this.learningRecords = learningRecords;
       this.learningRecordsLoading = false;
       this.learningRecordsError = learningRecordsError;
-      this.calendarModel = new BaseCalendarModel(filteredData, false, null);
-      this.labsModel = new BaseLabModel(learningRecords, false, learningRecordsError);
+      this.calendarModel = new BaseCalendarModel(filteredData, null);
+      this.labsModel = new BaseLabModel(learningRecords, learningRecordsError);
     } catch (e) {
       throw new Error("Failed to load calendar data");
     }
@@ -113,7 +112,7 @@ export class CourseTime implements TutorsTimeCourse {
       throw new Error(`Failed to fetch calendar data: ${error.message}`);
     }
 
-    const rawEntries: CalendarEntryBase[] = (data as CalendarEntryBase[]) ?? [];
+    const rawEntries = (data as Omit<CalendarEntry, "full_name">[]) ?? [];
 
     /** Convert timeactive from 30-second blocks to minutes at load */
     const toMinutes = (blocks: number | null | undefined): number =>
