@@ -1,5 +1,6 @@
 <script lang="ts">
   import type { TutorsTimeStudent } from "$lib/tutors-time-service/types";
+  import PinDialog from "$lib/components/PinDialog.svelte";
   import CalendarHeatmap from "$lib/components/calendar/CalendarHeatmap.svelte";
   import StudentCalendarTable from "$lib/components/tables/StudentCalendarTable.svelte";
   import CalendarByDayTable from "$lib/components/tables/CalendarByDayTable.svelte";
@@ -7,12 +8,22 @@
   import LabByStepTable from "$lib/components/tables/LabByStepTable.svelte";
 
   interface Props {
-    data: { studentCalendar: TutorsTimeStudent };
+    data: { course: { pin: string } | null; studentCalendar: TutorsTimeStudent };
   }
 
   let { data }: Props = $props();
+  let showPinDialog = $state(true);
 
+  function onVerified() {
+    showPinDialog = false;
+  }
 </script>
+
+<PinDialog
+  open={showPinDialog}
+  pin={data.course?.pin ?? ""}
+  onVerified={onVerified}
+/>
 
 <svelte:head>
   <title>Student Calendar</title>
