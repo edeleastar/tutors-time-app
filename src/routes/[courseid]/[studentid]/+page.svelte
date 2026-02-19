@@ -22,6 +22,7 @@
 <PinDialog
   open={showPinDialog}
   pin={data.course?.pin ?? ""}
+  sessionKey={data.course?.id}
   onVerified={onVerified}
 />
 

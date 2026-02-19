@@ -1,27 +1,47 @@
 <script lang="ts">
   import { Dialog, Portal } from "@skeletonlabs/skeleton-svelte";
 
+  const STORAGE_KEY_PREFIX = "tutors-time-pin-verified-";
+
   interface Props {
     /** Whether the dialog is open */
     open: boolean;
     /** The correct PIN to verify against */
     pin: string;
-    /** Called when the correct PIN is entered */
+    /** Optional key for session persistence. When set, verified state is stored in sessionStorage. */
+    sessionKey?: string;
+    /** Called when the correct PIN is entered (or already verified for sessionKey) */
     onVerified?: () => void;
   }
 
-  let { open, pin, onVerified }: Props = $props();
+  let { open, pin, sessionKey, onVerified }: Props = $props();
 
   let enteredPin = $state("");
   let error = $state<string | null>(null);
+  let alreadyVerified = $state(false);
 
   const animation =
     "transition transition-discrete opacity-0 translate-y-[100px] starting:data-[state=open]:opacity-0 starting:data-[state=open]:translate-y-[100px] data-[state=open]:opacity-100 data-[state=open]:translate-y-0";
 
+  function isVerifiedForSession(key: string): boolean {
+    if (typeof sessionStorage === "undefined") return false;
+    return sessionStorage.getItem(STORAGE_KEY_PREFIX + key) === "1";
+  }
+
+  function setVerifiedForSession(key: string): void {
+    sessionStorage?.setItem(STORAGE_KEY_PREFIX + key, "1");
+  }
+
   $effect(() => {
     if (open) {
-      enteredPin = "";
-      error = null;
+      if (sessionKey && isVerifiedForSession(sessionKey)) {
+        alreadyVerified = true;
+        onVerified?.();
+      } else {
+        alreadyVerified = false;
+        enteredPin = "";
+        error = null;
+      }
     }
   });
 
@@ -34,6 +54,7 @@
 
     if (trimmed === String(pin ?? "").trim()) {
       error = null;
+      if (sessionKey) setVerifiedForSession(sessionKey);
       onVerified?.();
     } else {
       error = "Incorrect PIN. Please try again.";
